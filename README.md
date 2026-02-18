@@ -1,6 +1,5 @@
 # Personal Life Dashboard (Angular)
 
-
 Personal Life Dashboard is a modular single-page web application developed as part of the  
 **Web Programming - Project 2** course at the **International Business-Information Academy Tuzla**.
 

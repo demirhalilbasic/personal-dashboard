@@ -1,0 +1,61 @@
+<div class="tracker-layout">
+    <div class="tracker-content">
+        <!-- Header -->
+        <div class="tracker-header">
+            <div class="header-left">
+                <button class="btn-back" routerLink="/my-trackers">← Nazad</button>
+                <div class="tracker-title" *ngIf="tracker">
+                    <span class="tracker-icon" [style.backgroundColor]="tracker.color + '20'">{{ tracker.icon }}</span>
+                    <div class="title-text">
+                        <h1>{{ tracker.name }}</h1>
+                        <p>{{ tracker.description }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item" title="Trenutni streak">
+                    <span class="stat-icon">🔥</span>
+                    <span class="stat-value">{{ streak }}</span>
+                    <span class="stat-label">dana</span>
+                </div>
+                <div class="stat-item" title="Sedmični napredak">
+                    <span class="stat-icon">📊</span>
+                    <span class="stat-value">{{ weeklyProgress }}%</span>
+                    <span class="stat-label">sedmica</span>
+                </div>
+                <div class="stat-item" title="Mjesečni napredak">
+                    <span class="stat-icon">📈</span>
+                    <span class="stat-value">{{ monthlyProgress }}%</span>
+                    <span class="stat-label">mjesec</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Date Display -->
+        <div class="date-display">
+            <span class="date-label">📅 {{ formatDate(selectedDate) }}</span>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" *ngIf="isLoading">
+            <div class="spinner"></div>
+            <p>Učitavanje...</p>
+        </div>
+
+        <!-- Saving Indicator -->
+        <div class="saving-indicator" *ngIf="isSaving">
+            <span class="save-icon">💾</span>
+            <span>Spremanje...</span>
+        </div>
+
+        <!-- Main Content (projected) -->
+        <div class="tracker-main">
+            <ng-content></ng-content>
+        </div>
+
+        <!-- Charts Section (projected) -->
+        <div class="tracker-charts">
+            <ng-content select="[charts]"></ng-content>
+        </div>
+    </div>
+</div>

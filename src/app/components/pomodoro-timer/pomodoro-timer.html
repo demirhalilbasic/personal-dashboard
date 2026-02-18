@@ -1,0 +1,100 @@
+<div class="pomodoro-widget">
+    <div class="widget-header">
+        <span class="widget-icon">🍅</span>
+        <h3>Pomodoro Timer</h3>
+    </div>
+
+    @if (!session || session.state === 'idle') {
+    <!-- Setup Form -->
+    <div class="setup-form">
+        <div class="form-group">
+            <label>Predmet</label>
+            <select [(ngModel)]="selectedSubject" class="form-select">
+                @for (subject of subjects; track subject) {
+                <option [value]="subject">{{ subject }}</option>
+                }
+            </select>
+        </div>
+
+        <div class="duration-row">
+            <div class="form-group small">
+                <label>Fokus (min)</label>
+                <select [(ngModel)]="sessionDuration" class="form-select">
+                    @for (dur of durationOptions; track dur) {
+                    <option [value]="dur">{{ dur }}</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group small">
+                <label>Pauza (min)</label>
+                <select [(ngModel)]="breakDuration" class="form-select">
+                    @for (dur of breakOptions; track dur) {
+                    <option [value]="dur">{{ dur }}</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <button class="start-btn" (click)="startSession()" [disabled]="!selectedSubject">
+            ▶️ Pokreni sesiju
+        </button>
+    </div>
+    } @else {
+    <!-- Active Session -->
+    <div class="session-active">
+        <div class="subject-badge">
+            📚 {{ session.subject }}
+        </div>
+
+        <div class="timer-display">
+            <div class="timer-circle"
+                [style.background]="'conic-gradient(var(--color-accent, #ff9800) ' + getProgressPercent() + '%, transparent ' + getProgressPercent() + '%)'">
+                <div class="timer-inner">
+                    <span class="timer-emoji">{{ getStateEmoji() }}</span>
+                    <span class="timer-time">{{ formatTime(session.remainingSeconds) }}</span>
+                    <span class="timer-state">{{ getStateLabel() }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="session-stats">
+            <span class="stat">
+                <span class="stat-icon">🔄</span>
+                {{ session.completedSessions }} sesija
+            </span>
+            <span class="stat">
+                <span class="stat-icon">⏱️</span>
+                {{ Math.floor(session.totalFocusTime / 60) }} min
+            </span>
+        </div>
+
+        <div class="session-actions">
+            @if (session.state === 'focus' || session.state === 'break') {
+            <button class="action-btn pause" (click)="pauseSession()">
+                ⏸️ Pauziraj
+            </button>
+            }
+
+            @if (session.state === 'paused') {
+            <button class="action-btn resume" (click)="resumeSession()">
+                ▶️ Nastavi
+            </button>
+            }
+
+            @if (session.state === 'finished') {
+            <button class="action-btn break" (click)="startBreak()">
+                ☕ Pauza ({{ session.breakDuration }} min)
+            </button>
+            <button class="action-btn continue" (click)="continueSession()">
+                🔄 Nastavi učenje
+            </button>
+            }
+
+            <button class="action-btn end" (click)="endSession()">
+                ✖️ Završi
+            </button>
+        </div>
+    </div>
+    }
+</div>

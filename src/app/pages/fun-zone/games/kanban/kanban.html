@@ -1,0 +1,121 @@
+<div class="kanban-wrapper">
+    <div class="kanban-content">
+        <div class="page-header">
+            <div class="welcome-section">
+                <h1>{{ currentTheme?.emoji }} Kanban Board</h1>
+                <p>Organiziraj zadatke uz drag & drop funkcionalnost</p>
+            </div>
+            <div class="header-actions">
+                <button (click)="toggleStatsPanel()" class="btn-stats">📊 Statistika</button>
+                <button routerLink="/fun-zone" class="btn-settings">⬅️ Nazad</button>
+                <button (click)="logout()" class="btn-logout">🚪 Odjavi se</button>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button (click)="openAddTask()">➕ Dodaj zadatak</button>
+            <button (click)="saveBoard()" [disabled]="isSaving">
+                {{ isSaving ? '⏳ Spremanje...' : '💾 Snimi' }}
+            </button>
+            <button (click)="openClearBoard()">🗑️ Očisti ploču</button>
+        </div>
+
+        <!-- Save message -->
+        <div class="save-message" *ngIf="saveMessage" [class.success]="saveMessage.includes('✅')"
+            [class.error]="saveMessage.includes('❌')">
+            {{ saveMessage }}
+        </div>
+
+        <!-- Modal za dodavanje zadatka -->
+        <div class="modal" [class.show]="showTaskModal" (click)="cancelAdd()">
+            <div class="modal-content" (click)="$event.stopPropagation()">
+                <h3>Dodaj zadatak</h3>
+                <input type="text" [(ngModel)]="taskInput" placeholder="Vaš zadatak..." (keyup.enter)="addTask()" />
+                <div class="modal-buttons">
+                    <button (click)="addTask()">Dodaj</button>
+                    <button (click)="cancelAdd()">Poništi</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal za brisanje ploče -->
+        <div class="modal" [class.show]="showClearModal" (click)="cancelClear()">
+            <div class="modal-content" (click)="$event.stopPropagation()">
+                <h3>Očisti cijelu ploču?</h3>
+                <p>Ova se radnja ne može poništiti.</p>
+                <div class="modal-buttons">
+                    <button (click)="clearBoard()" style="background:#e74c3c;">Očisti</button>
+                    <button (click)="cancelClear()">Poništi</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kanban ploča s tri kolone -->
+        <div class="board">
+            <div class="column" (dragover)="onDragOver($event)" (drop)="onDrop('todo')">
+                <h2>To Do</h2>
+                <div class="taskList">
+                    <div *ngFor="let task of getTasks('todo')" class="task" draggable="true"
+                        (dragstart)="onDragStart(task)" (dragend)="onDragEnd()">
+                        {{ task.text }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="column" (dragover)="onDragOver($event)" (drop)="onDrop('progress')">
+                <h2>In Progress</h2>
+                <div class="taskList">
+                    <div *ngFor="let task of getTasks('progress')" class="task" draggable="true"
+                        (dragstart)="onDragStart(task)" (dragend)="onDragEnd()">
+                        {{ task.text }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="column" (dragover)="onDragOver($event)" (drop)="onDrop('done')">
+                <h2>Done</h2>
+                <div class="taskList">
+                    <div *ngFor="let task of getTasks('done')" class="task" draggable="true"
+                        (dragstart)="onDragStart(task)" (dragend)="onDragEnd()">
+                        {{ task.text }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Panel -->
+<div class="stats-panel" [class.visible]="showStatsPanel">
+    <div class="stats-card">
+        <button class="stats-close-btn" type="button" aria-label="Zatvori" (click)="toggleStatsPanel()">×</button>
+        <h3>📊 Tvoja Kanban Statistika</h3>
+
+        <div class="stats-loading" *ngIf="!stats">
+            <span>Učitavanje...</span>
+        </div>
+
+        <div class="stats-grid" *ngIf="stats">
+            <div class="stat-item">
+                <span class="stat-value">{{ stats.tasksCreated }}</span>
+                <span class="stat-label">Kreirano zadataka</span>
+            </div>
+            <div class="stat-item highlight">
+                <span class="stat-value">{{ stats.tasksCompleted }}</span>
+                <span class="stat-label">✅ Završeno</span>
+            </div>
+        </div>
+
+        <div class="completion-rate" *ngIf="stats && stats.tasksCreated > 0">
+            <div class="rate-label">Stopa završetka</div>
+            <div class="rate-bar">
+                <div class="rate-fill" [style.width.%]="(stats.tasksCompleted / stats.tasksCreated) * 100"></div>
+            </div>
+            <div class="rate-value">{{ ((stats.tasksCompleted / stats.tasksCreated) * 100).toFixed(0) }}%</div>
+        </div>
+
+        <p class="stats-note" *ngIf="stats?.tasksCreated === 0">
+            Dodaj prvi zadatak da počneš pratiti produktivnost! 📋
+        </p>
+    </div>
+</div>

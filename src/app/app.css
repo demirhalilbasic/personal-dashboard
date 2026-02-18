@@ -1,0 +1,22 @@
+/* App component layout to prevent extra white space */
+:host {
+  display: contents;
+}
+
+app-header {
+  flex-shrink: 0;
+}
+
+router-outlet {
+  display: none;
+}
+
+router-outlet + * {
+  flex: 1 0 auto;
+  display: block;
+}
+
+app-footer {
+  flex-shrink: 0;
+  margin-top: auto;
+}

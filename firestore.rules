@@ -1,0 +1,84 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection rules
+    match /users/{userId} {
+      // Allow users to read and write only their own data
+      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow any authenticated user to create their own document during registration
+      allow create: if request.auth != null && request.auth.uid == userId;
+      
+      // Ensure selectedTheme field is one of the valid theme IDs (when updating theme)
+      allow update: if request.auth != null 
+                    && request.auth.uid == userId
+                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['selectedTheme']) 
+                        || request.resource.data.selectedTheme in [
+                          'cyberpunk', 'nature', 'ocean', 'sunset', 
+                          'minimal', 'neon', 'classic', 'dark', 
+                          'pastel', 'retro'
+                        ]);
+      
+      // Weather settings validation - users can update their weather preferences
+      allow update: if request.auth != null 
+                    && request.auth.uid == userId
+                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['weatherSettings']) 
+                        || (request.resource.data.weatherSettings.temperatureUnit in ['celsius', 'fahrenheit']
+                            && request.resource.data.weatherSettings.windSpeedUnit in ['kmh', 'mph', 'ms']));
+      
+      // FunZone stats subcollection - users can read/write their own game stats
+      match /funzone/{gameId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // Tracker entries subcollection - users can read/write their own tracker data
+      match /trackers/{trackerId}/entries/{date} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // Tracker settings subcollection - users can read/write their tracker preferences
+      match /trackerSettings/{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // Notifications subcollection - users can read/write their own notifications
+      match /notifications/{notificationId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // Pomodoro session subcollection - users can read/write their own pomodoro sessions
+      match /pomodoro/{sessionId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // Pomodoro stats subcollection - users can read/write their own pomodoro statistics
+      match /pomodoroStats/{monthKey} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // Calendar cache subcollection - users can read/write their own calendar cache
+      match /calendarCache/{monthKey} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+    // Leaderboard collection - readable by all authenticated users, writable by the system
+    match /leaderboard/{monthKey} {
+      // Any authenticated user can read the leaderboard
+      allow read: if request.auth != null;
+      
+      // Users can update leaderboard entries (we validate in the app logic)
+      allow write: if request.auth != null;
+    }
+    
+    // API Stats collection - for tracking API call counts
+    match /apiStats/{statId} {
+      // Any authenticated user can read API stats
+      allow read: if request.auth != null;
+      
+      // Any authenticated user can update API stats (increment counter)
+      allow write: if request.auth != null;
+    }
+  }
+}

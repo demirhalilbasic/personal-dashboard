@@ -1,0 +1,99 @@
+<div class="snake-wrapper">
+    <div class="snake-content">
+        <div class="page-header">
+            <div class="welcome-section">
+                <h1>{{ currentTheme?.emoji }} Snake Game</h1>
+                <p>Klasična igra zmije - sakupljaj IPI logo i rasti!</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-stats" (click)="toggleStatsPanel()">📊 Statistika</button>
+                <button class="btn-info" (click)="showInstructions = true">❓ Upute</button>
+                <button class="btn-settings" routerLink="/fun-zone">⬅️ Fun Zone</button>
+                <button class="btn-logout" (click)="logout()">🚪 Odjava</button>
+            </div>
+        </div>
+
+        <div class="game-container">
+            <div class="game-info">
+                <div class="score-display">
+                    <div class="current-score">🏆 Bodovi: {{ score }}</div>
+                    <div class="high-score" *ngIf="stats">🥇 Rekord: {{ stats.highScore }}</div>
+                </div>
+                <button *ngIf="!gameStarted || gameOver" (click)="startGame()" class="start-btn">🎮 {{ gameOver ? 'Igraj
+                    ponovo' : 'Započni igru' }}</button>
+                <button *ngIf="gameStarted && !gameOver" (click)="startGame()" class="restart-btn">🔄 Restart</button>
+            </div>
+
+            <canvas #canvas></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Game Over Modal -->
+<div class="modal-overlay" [class.visible]="showGameOverModal" role="dialog" aria-modal="true"
+    aria-labelledby="gameOverTitle">
+    <div class="modal-card">
+        <button class="modal-close-btn" type="button" aria-label="Zatvori" (click)="closeModal()">×</button>
+        <h2 id="gameOverTitle" *ngIf="!isNewHighScore">💀 Game Over!</h2>
+        <h2 id="gameOverTitle" *ngIf="isNewHighScore">🎉 Novi Rekord!</h2>
+        <p>Vaš rezultat: <strong>{{ score }}</strong> bodova</p>
+        <p *ngIf="isNewHighScore" class="new-record-text">Čestitamo! Postigli ste novi osobni rekord!</p>
+        <p *ngIf="stats && !isNewHighScore" class="previous-record">Rekord: {{ stats.highScore }} bodova</p>
+        <div class="modal-actions">
+            <button type="button" (click)="startGame()">🎮 Igraj ponovo</button>
+            <button type="button" (click)="closeModal()">❌ Zatvori</button>
+        </div>
+    </div>
+</div>
+
+<!-- Instructions Modal -->
+<div class="modal-overlay" [class.visible]="showInstructions" role="dialog" aria-modal="true"
+    aria-labelledby="instructionsTitle">
+    <div class="modal-card instructions-modal">
+        <button class="modal-close-btn" type="button" aria-label="Zatvori" (click)="showInstructions = false">×</button>
+        <h2 id="instructionsTitle">🎯 Kako igrati</h2>
+        <ul class="instructions-list">
+            <li>⬆️⬇️⬅️➡️ Koristite strelice na tastaturi za kontrolu zmije</li>
+            <li>🎯 Sakupljajte IPI logo da biste porasli i osvojili bodove</li>
+            <li>⚠️ Nemojte udariti u zidove ili sebe!</li>
+        </ul>
+        <div class="modal-actions">
+            <button type="button" (click)="showInstructions = false">👍 Razumijem</button>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Panel -->
+<div class="stats-panel" [class.visible]="showStatsPanel">
+    <div class="stats-card">
+        <button class="stats-close-btn" type="button" aria-label="Zatvori" (click)="toggleStatsPanel()">×</button>
+        <h3>📊 Tvoja Snake Statistika</h3>
+
+        <div class="stats-loading" *ngIf="!stats">
+            <span>Učitavanje...</span>
+        </div>
+
+        <div class="stats-grid" *ngIf="stats">
+            <div class="stat-item">
+                <span class="stat-value">{{ stats.gamesPlayed }}</span>
+                <span class="stat-label">Odigrano igara</span>
+            </div>
+            <div class="stat-item highlight">
+                <span class="stat-value">{{ stats.highScore }}</span>
+                <span class="stat-label">🥇 Rekord</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ stats.totalScore }}</span>
+                <span class="stat-label">Ukupno bodova</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ stats.averageScore }}</span>
+                <span class="stat-label">Prosječni rezultat</span>
+            </div>
+        </div>
+
+        <p class="stats-note" *ngIf="stats?.gamesPlayed === 0">
+            Odigraj prvu igru da počneš skupljati statistiku! 🎮
+        </p>
+    </div>
+</div>

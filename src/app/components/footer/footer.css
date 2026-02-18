@@ -1,0 +1,15 @@
+footer {
+  padding-top: 15px;
+  min-height: 30px;
+  background: linear-gradient(
+    135deg,
+    var(--color-secondary, #2a4a8a) 0%,
+    var(--color-primary, #345aaa) 100%
+  );
+  color: white;
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}

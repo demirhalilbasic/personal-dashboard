@@ -1,0 +1,192 @@
+<div class="settings-container">
+    @if (isReady && userData && currentTheme) {
+    <div class="settings-content">
+        <div class="settings-header">
+            <h1>⚙️ Postavke</h1>
+            <button class="btn-back" routerLink="/dashboard">
+                ← Nazad na Dashboard
+            </button>
+        </div>
+
+        <div class="settings-card">
+            <h2>🎨 Promijeni Temu</h2>
+            <p class="settings-description">
+                Odaberite novu temu za vaš dashboard. Promjene će biti automatski sačuvane.
+            </p>
+
+            <div class="current-theme">
+                <h3>Trenutna Tema: {{ currentTheme.emoji }} {{ currentTheme.name }}</h3>
+            </div>
+
+            <div class="theme-grid">
+                @for (theme of themes; track theme.id) {
+                <div class="theme-card" [class.selected]="theme.id === activeThemeId"
+                    [class.preview]="previewThemeId === theme.id && theme.id !== activeThemeId"
+                    (click)="selectTheme(theme.id)" (mouseenter)="previewTheme(theme.id)" (mouseleave)="clearPreview()">
+                    <div class="theme-emoji">{{ theme.emoji }}</div>
+                    <div class="theme-name">{{ theme.name }}</div>
+                    <div class="theme-preview-colors">
+                        <span [style.background]="theme.colors.primary"></span>
+                        <span [style.background]="theme.colors.secondary"></span>
+                        <span [style.background]="theme.colors.accent"></span>
+                    </div>
+                    @if (theme.id === activeThemeId) {
+                    <div class="selected-badge">✓ Odabrano</div>
+                    }
+                </div>
+                }
+            </div>
+
+            <div class="theme-preview-description">
+                <h3>{{ getActiveTheme()?.emoji }} {{ getActiveTheme()?.name }}</h3>
+                <p>{{ getActiveDescription() }}</p>
+            </div>
+        </div>
+
+        <div class="settings-card">
+            <h2>👤 Informacije o Profilu</h2>
+            <p class="settings-description">Brzi pogled na tvoj profil.</p>
+            <div class="profile-info">
+                <div class="profile-item">
+                    <span class="profile-label">Ime i Prezime</span>
+                    <span class="profile-value">{{ userData.ime }} {{ userData.prezime }}</span>
+                </div>
+                <div class="profile-item">
+                    <span class="profile-label">Email</span>
+                    <span class="profile-value">{{ userData.email }}</span>
+                </div>
+                <div class="profile-item">
+                    <span class="profile-label">Datum Rođenja</span>
+                    <span class="profile-value">{{ userData.datumRodjenja }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weather Settings -->
+        <div class="settings-card weather-settings-card">
+            <h2>🌤️ Postavke Vremenske Prognoze</h2>
+            <p class="settings-description">Odaberite grad i jedinice za prikaz vremenske prognoze na vašem dashboardu.
+            </p>
+
+            <!-- Current City Display -->
+            @if (weatherSettings) {
+            <div class="current-weather-city">
+                <span class="weather-city-icon">📍</span>
+                <div class="weather-city-info">
+                    <span class="weather-city-label">Trenutni grad:</span>
+                    <span class="weather-city-name">{{ weatherSettings.city }}, {{ weatherSettings.country }}</span>
+                </div>
+            </div>
+            }
+
+            <!-- City Search -->
+            <div class="weather-section">
+                <h3>🔍 Pretražite grad</h3>
+                <div class="search-input-wrapper">
+                    <input type="text" [(ngModel)]="citySearchQuery" (input)="searchCities()"
+                        placeholder="Unesite naziv grada..." class="city-search-input" />
+                    @if (isSearchingCities) {
+                    <span class="search-spinner">🔍</span>
+                    }
+                </div>
+
+                @if (citySearchResults.length > 0) {
+                <div class="search-results">
+                    @for (result of citySearchResults; track result.latitude) {
+                    <button class="search-result-item" (click)="selectCityFromSearch(result)">
+                        <span class="city-name">{{ result.city }}</span>
+                        <span class="country-name">{{ result.country }}</span>
+                    </button>
+                    }
+                </div>
+                }
+            </div>
+
+            <!-- Popular Cities -->
+            <div class="weather-section">
+                <h3>🌍 Popularni gradovi</h3>
+                <div class="popular-cities-grid">
+                    @for (city of popularCities; track city.city) {
+                    <button class="popular-city-btn"
+                        [class.selected]="selectedCity?.city === city.city && selectedCity?.country === city.country"
+                        (click)="selectPopularCity(city)">
+                        {{ city.city }}
+                    </button>
+                    }
+                </div>
+            </div>
+
+            @if (selectedCity) {
+            <div class="selected-city-display">
+                <span>📍 Odabrano:</span>
+                <strong>{{ selectedCity.city }}, {{ selectedCity.country }}</strong>
+            </div>
+            }
+
+            <!-- Units Selection -->
+            <div class="weather-section units-section">
+                <h3>📏 Jedinice mjere</h3>
+                <div class="units-grid">
+                    <div class="unit-group">
+                        <label>Temperatura:</label>
+                        <div class="unit-toggle">
+                            <button [class.active]="temperatureUnit === 'celsius'"
+                                (click)="temperatureUnit = 'celsius'">°C (Celsius)</button>
+                            <button [class.active]="temperatureUnit === 'fahrenheit'"
+                                (click)="temperatureUnit = 'fahrenheit'">°F (Fahrenheit)</button>
+                        </div>
+                    </div>
+                    <div class="unit-group">
+                        <label>Brzina vjetra:</label>
+                        <div class="unit-toggle">
+                            <button [class.active]="windSpeedUnit === 'kmh'"
+                                (click)="windSpeedUnit = 'kmh'">km/h</button>
+                            <button [class.active]="windSpeedUnit === 'mph'"
+                                (click)="windSpeedUnit = 'mph'">mph</button>
+                            <button [class.active]="windSpeedUnit === 'ms'" (click)="windSpeedUnit = 'ms'">m/s</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Button -->
+            <button class="save-weather-btn" [class.saving]="weatherSaveStatus === 'saving'"
+                [class.saved]="weatherSaveStatus === 'saved'" [class.error]="weatherSaveStatus === 'error'"
+                [disabled]="!selectedCity || weatherSaveStatus === 'saving' || !hasWeatherChanges()"
+                (click)="saveWeatherSettings()">
+                @if (weatherSaveStatus === 'saving') {
+                ⏳ Spremam...
+                } @else if (weatherSaveStatus === 'saved') {
+                ✅ Sačuvano!
+                } @else if (weatherSaveStatus === 'error') {
+                ❌ Greška pri spremanju
+                } @else {
+                💾 Sačuvaj Postavke Vremena
+                }
+            </button>
+        </div>
+    </div>
+
+    @if (themeEmojiRainActive) {
+    <div class="theme-emoji-rain" aria-hidden="true">
+        @for (e of themeEmojiRain; track $index) {
+        <span [style.left.%]="5 + ($index * 6)" [style.animationDelay.s]="$index * 0.15">{{ e }}</span>
+        }
+    </div>
+    }
+
+    @if (themePopupVisible) {
+    <div class="theme-popup">
+        {{ themePopupMessage }}
+    </div>
+    }
+    } @else if (isReady && loadError) {
+    <div class="loading">
+        <p>{{ loadError }}</p>
+    </div>
+    } @else {
+    <div class="loading">
+        <div class="loader-pulse" aria-label="Loading"></div>
+    </div>
+    }
+</div>

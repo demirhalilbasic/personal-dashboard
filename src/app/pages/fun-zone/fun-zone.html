@@ -1,0 +1,22 @@
+<div class="fun-zone-container">
+    <div class="fun-zone-content">
+        <div class="page-header">
+            <div class="welcome-section">
+                <h1>{{ currentTheme?.emoji }} Student Fun Zone</h1>
+                <p>Istraži interaktivne alate i igre za učenje i zabavu</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-settings" routerLink="/dashboard">⬅️ Dashboard</button>
+                <button class="btn-logout" (click)="logout()">🚪 Odjava</button>
+            </div>
+        </div>
+
+        <div class="games-grid">
+            <a *ngFor="let game of games" [routerLink]="game.route" class="game-card">
+                <div class="game-icon">{{ game.icon }}</div>
+                <h3>{{ game.name }}</h3>
+                <p>{{ game.description }}</p>
+            </a>
+        </div>
+    </div>
+</div>

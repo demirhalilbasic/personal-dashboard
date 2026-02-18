@@ -1,0 +1,163 @@
+<div class="tracker-container">
+    <div class="tracker-content">
+        <!-- Header -->
+        <div class="tracker-header">
+            <div class="header-left">
+                <button class="btn-back" routerLink="/my-trackers">← Nazad</button>
+                <div class="tracker-title" *ngIf="tracker">
+                    <span class="tracker-icon" [style.backgroundColor]="tracker.color + '20'">{{ tracker.icon }}</span>
+                    <div class="title-text">
+                        <h1>{{ tracker.name }}</h1>
+                        <p>{{ tracker.description }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <span class="stat-icon">🔥</span>
+                    <span class="stat-value">{{ streak }}</span>
+                    <span class="stat-label">streak</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">📊</span>
+                    <span class="stat-value">{{ weeklyProgress }}%</span>
+                    <span class="stat-label">sedmica</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">😊</span>
+                    <span class="stat-value">{{ getAverageMood() }}</span>
+                    <span class="stat-label">prosjek</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Date Selector -->
+        <div class="date-section">
+            <button class="date-picker-btn" (click)="toggleDatePicker()">
+                <span class="date-icon">📅</span>
+                <span class="date-text">{{ formatDateShort(selectedDate) }}</span>
+                <span class="date-arrow">▼</span>
+            </button>
+
+            <!-- Date Picker Popup -->
+            <div class="date-picker-popup" *ngIf="showDatePicker">
+                <div class="date-option" *ngFor="let date of dateOptions" [class.active]="selectedDate === date"
+                    [class.today]="isToday(date)" (click)="selectDate(date)">
+                    <span class="date-day">{{ getDayName(date) }}</span>
+                    <span class="date-full">{{ formatDateShort(date) }}</span>
+                    <span class="date-badge" *ngIf="isToday(date)">Danas</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popup Overlay -->
+        <div class="date-picker-overlay" *ngIf="showDatePicker" (click)="closeDatePicker()"></div>
+
+        <!-- Loading -->
+        <div class="loading" *ngIf="isLoading">
+            <div class="spinner"></div>
+            <p>Učitavanje...</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content" *ngIf="!isLoading">
+            <!-- Main Mood Selection -->
+            <div class="mood-section">
+                <h2>Kako se danas osjećaš?</h2>
+                <div class="mood-selector">
+                    <button class="mood-btn" *ngFor="let option of moodOptions" [class.selected]="mood === option.value"
+                        [style.borderColor]="mood === option.value ? option.color : 'transparent'"
+                        (click)="setMood(option.value)">
+                        <span class="mood-emoji">{{ option.emoji }}</span>
+                        <span class="mood-label">{{ option.label }}</span>
+                    </button>
+                </div>
+                <div class="current-mood" *ngIf="mood">
+                    <span class="big-emoji" [style.color]="getMoodColor(mood)">{{ getMoodEmoji(mood) }}</span>
+                </div>
+            </div>
+
+            <!-- Metrics Grid -->
+            <div class="metrics-grid">
+                <!-- Energy Level -->
+                <div class="metric-card">
+                    <h3>⚡ Energija</h3>
+                    <div class="slider-container">
+                        <input type="range" min="1" max="5" [(ngModel)]="energy" (change)="setEnergy(energy)"
+                            class="slider">
+                        <div class="slider-labels">
+                            <span>Niska</span>
+                            <span class="slider-value">{{ energy }}/5</span>
+                            <span>Visoka</span>
+                        </div>
+                    </div>
+                    <div class="energy-bar">
+                        <div class="energy-fill" [style.width.%]="energy * 20"></div>
+                    </div>
+                </div>
+
+                <!-- Stress Level -->
+                <div class="metric-card">
+                    <h3>😰 Stres</h3>
+                    <div class="slider-container">
+                        <input type="range" min="1" max="5" [(ngModel)]="stress" (change)="setStress(stress)"
+                            class="slider stress-slider">
+                        <div class="slider-labels">
+                            <span>Nizak</span>
+                            <span class="slider-value">{{ stress }}/5</span>
+                            <span>Visok</span>
+                        </div>
+                    </div>
+                    <div class="stress-bar">
+                        <div class="stress-fill" [style.width.%]="stress * 20"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emotions -->
+            <div class="emotions-section">
+                <h2>🎭 Koje emocije osjećaš?</h2>
+                <div class="emotions-grid">
+                    <button class="emotion-btn" *ngFor="let emotion of emotions"
+                        [class.selected]="isEmotionSelected(emotion.name)" (click)="toggleEmotion(emotion.name)">
+                        <span class="emotion-emoji">{{ emotion.emoji }}</span>
+                        <span class="emotion-name">{{ emotion.name }}</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="notes-section">
+                <h2>📝 Bilješke</h2>
+                <textarea [(ngModel)]="notes" placeholder="Kako je prošao tvoj dan? Zašto se tako osjećaš?" rows="4">
+                </textarea>
+            </div>
+
+            <!-- Save Button -->
+            <button class="btn-save" (click)="saveData()" [disabled]="isSaving">
+                {{ isSaving ? '💾 Spremanje...' : '💾 Spremi' }}
+            </button>
+
+            <!-- Weekly Mood Chart -->
+            <div class="chart-section">
+                <h2>📊 Raspoloženje kroz sedmicu</h2>
+                <div class="mood-chart">
+                    <div class="chart-item" *ngFor="let data of weeklyMoodData">
+                        <div class="chart-bar-container">
+                            <div class="chart-emoji" *ngIf="data.mood > 0">{{ getMoodEmoji(data.mood) }}</div>
+                            <div class="chart-bar" [style.height.%]="data.mood * 20"
+                                [style.backgroundColor]="getMoodColor(data.mood)">
+                            </div>
+                        </div>
+                        <span class="chart-label">{{ data.day }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Saving Indicator -->
+        <div class="saving-indicator" *ngIf="isSaving">
+            <span>💾 Spremanje...</span>
+        </div>
+    </div>
+</div>

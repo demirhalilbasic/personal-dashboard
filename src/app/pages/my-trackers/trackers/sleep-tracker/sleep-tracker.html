@@ -1,0 +1,141 @@
+<div class="tracker-container">
+    <div class="tracker-content">
+        <div class="tracker-header">
+            <div class="header-left">
+                <button class="btn-back" routerLink="/my-trackers">← Nazad</button>
+                <div class="tracker-title" *ngIf="tracker">
+                    <span class="tracker-icon" [style.backgroundColor]="tracker.color + '20'">{{ tracker.icon }}</span>
+                    <div class="title-text">
+                        <h1>{{ tracker.name }}</h1>
+                        <p>{{ tracker.description }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item"><span class="stat-icon">🔥</span><span class="stat-value">{{ streak
+                        }}</span><span class="stat-label">streak</span></div>
+                <div class="stat-item"><span class="stat-icon">📊</span><span class="stat-value">{{ weeklyProgress
+                        }}%</span><span class="stat-label">sedmica</span></div>
+                <div class="stat-item"><span class="stat-icon">😴</span><span class="stat-value">{{ averageHours
+                        }}h</span><span class="stat-label">prosjek</span></div>
+            </div>
+        </div>
+
+        <!-- Date Selector -->
+        <div class="date-section">
+            <button class="date-picker-btn" (click)="toggleDatePicker()">
+                <span class="date-icon">📅</span>
+                <span class="date-text">{{ formatDateShort(selectedDate) }}</span>
+                <span class="date-arrow">▼</span>
+            </button>
+
+            <!-- Date Picker Popup -->
+            <div class="date-picker-popup" *ngIf="showDatePicker">
+                <div class="date-option" *ngFor="let date of dateOptions" [class.active]="selectedDate === date"
+                    [class.today]="isToday(date)" (click)="selectDate(date)">
+                    <span class="date-day">{{ getDayName(date) }}</span>
+                    <span class="date-full">{{ formatDateShort(date) }}</span>
+                    <span class="date-badge" *ngIf="isToday(date)">Danas</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popup Overlay -->
+        <div class="date-picker-overlay" *ngIf="showDatePicker" (click)="closeDatePicker()"></div>
+
+        <div class="loading" *ngIf="isLoading">
+            <div class="spinner"></div>
+            <p>Učitavanje...</p>
+        </div>
+
+        <div class="main-content" *ngIf="!isLoading">
+            <div class="sleep-visual">
+                <div class="moon-container">
+                    <div class="moon">🌙</div>
+                    <div class="stars">✨</div>
+                </div>
+                <div class="sleep-hours">
+                    <span class="hours-value">{{ hoursSlept }}</span>
+                    <span class="hours-label">sati sna</span>
+                </div>
+                <div class="quality-badge" [style.backgroundColor]="getQualityColor(quality)">
+                    <span>{{ getQualityEmoji() }}</span>
+                </div>
+            </div>
+
+            <div class="time-section">
+                <div class="time-card">
+                    <span class="time-icon">🛏️</span>
+                    <label>Vrijeme spavanja</label>
+                    <input type="time" [(ngModel)]="bedTime" (change)="onTimeChange()">
+                </div>
+                <div class="time-arrow">→</div>
+                <div class="time-card">
+                    <span class="time-icon">⏰</span>
+                    <label>Vrijeme buđenja</label>
+                    <input type="time" [(ngModel)]="wakeTime" (change)="onTimeChange()">
+                </div>
+            </div>
+
+            <div class="quality-section">
+                <h2>Kvaliteta sna</h2>
+                <div class="quality-options">
+                    <button *ngFor="let opt of qualityOptions" class="quality-btn"
+                        [class.selected]="quality === opt.value"
+                        [style.borderColor]="quality === opt.value ? opt.color : 'transparent'"
+                        (click)="quality = opt.value">
+                        <span class="quality-emoji">{{ opt.emoji }}</span>
+                        <span class="quality-label">{{ opt.label }}</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="notes-section">
+                <h2>📝 Bilješke</h2>
+                <textarea [(ngModel)]="notes" placeholder="Kako ste se osjećali nakon buđenja?" rows="3"></textarea>
+            </div>
+
+            <button class="btn-save" (click)="saveData()" [disabled]="isSaving">
+                {{ isSaving ? '💾 Spremanje...' : '💾 Spremi' }}
+            </button>
+
+            <div class="chart-section">
+                <h2>📊 Sedmični pregled sna</h2>
+                <div class="sleep-chart">
+                    <div class="chart-item" *ngFor="let data of weeklyData">
+                        <div class="chart-bar-container">
+                            <div class="chart-bar" [style.height.%]="getBarHeight(data.hours)"
+                                [style.backgroundColor]="getQualityColor(data.quality)">
+                                <span class="bar-value" *ngIf="data.hours > 0">{{ data.hours }}h</span>
+                            </div>
+                        </div>
+                        <span class="chart-label">{{ data.day }}</span>
+                    </div>
+                </div>
+                <div class="chart-legend">
+                    <span>🎯 Preporučeno: 7-9 sati</span>
+                </div>
+            </div>
+
+            <div class="tips-section">
+                <h3>💡 Savjeti za bolji san</h3>
+                <div class="tips-grid">
+                    <div class="tip-card"><span>📵</span>
+                        <p>Izbjegavajte ekrane 1h prije spavanja</p>
+                    </div>
+                    <div class="tip-card"><span>🌡️</span>
+                        <p>Držite sobu hladnom (18-20°C)</p>
+                    </div>
+                    <div class="tip-card"><span>☕</span>
+                        <p>Izbjegavajte kofein popodne</p>
+                    </div>
+                    <div class="tip-card"><span>🕐</span>
+                        <p>Spavajte i budite se u isto vrijeme</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="saving-indicator" *ngIf="isSaving"><span>💾 Spremanje...</span></div>
+    </div>
+</div>

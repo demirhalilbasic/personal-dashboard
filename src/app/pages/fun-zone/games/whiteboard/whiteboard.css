@@ -1,0 +1,146 @@
+.whiteboard-wrapper {
+  min-height: 100vh;
+  background: var(--color-background, #f5f5f5);
+  padding: 50px 0;
+  transition: background 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.whiteboard-wrapper canvas.drawing {
+  cursor: url('/images/marker.png') 0 24, crosshair;
+}
+
+.whiteboard-content {
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.page-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.welcome-section h1 {
+  color: var(--color-text, #333);
+  font-size: 2.5rem;
+  margin-bottom: 5px;
+  animation: fadeIn 0.5s ease;
+}
+
+.welcome-section p {
+  color: var(--color-textSecondary, #666);
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.btn-settings,
+.btn-logout {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  box-sizing: border-box;
+}
+
+.btn-settings {
+  background: var(--color-secondary, #6b8e23);
+  color: white;
+}
+
+.btn-logout {
+  background: var(--color-primary, #345aaa);
+  color: white;
+}
+
+.btn-settings:hover,
+.btn-logout:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toolbar {
+  background: var(--color-surface, white);
+  padding: 15px 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.toolbar label {
+  font-size: 14px;
+  color: var(--color-text-secondary, #444);
+  margin-right: 5px;
+}
+
+button {
+  background: var(--color-primary, #345aaa);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: var(--color-accent, #2a4a8a);
+}
+
+canvas {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  touch-action: none;
+  max-width: 90vw;
+  cursor: crosshair;
+}
+
+@media (max-width: 768px) {
+  canvas {
+    max-height: 50vh;
+  }
+
+  .toolbar {
+    font-size: 12px;
+  }
+}

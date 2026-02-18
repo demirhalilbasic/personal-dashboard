@@ -1,0 +1,86 @@
+<header>
+    <a routerLink="/" class="logo-link">
+        <img src="images/logo-ipi.png" alt="Kursevi IPI">
+    </a>
+
+    <!-- Mobile Right Container: Notifications + Hamburger -->
+    <div class="header-right-controls">
+        <!-- Notification Bell (only for authenticated users) -->
+        @if (isAuthenticated()) {
+        <div class="notification-wrapper">
+            <button class="notification-bell" (click)="toggleNotifications()" [class.has-unread]="unreadCount > 0">
+                <span class="bell-icon">🔔</span>
+                <span class="notification-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+            </button>
+
+            <!-- Notification Dropdown -->
+            <div class="notification-dropdown" *ngIf="showNotifications">
+                <div class="notification-header">
+                    <h3>🔔 Obavijesti</h3>
+                    <button class="mark-all-read" (click)="markAllAsRead()" *ngIf="unreadCount > 0">
+                        Označi sve kao pročitano
+                    </button>
+                </div>
+                <div class="notification-list" *ngIf="notifications.length > 0">
+                    <div class="notification-item" *ngFor="let notification of notifications"
+                        [class.unread]="!notification.read" (click)="markAsRead(notification)">
+                        <span class="notification-icon">{{ notification.icon }}</span>
+                        <div class="notification-content">
+                            <strong>{{ notification.title }}</strong>
+                            <p>{{ notification.message }}</p>
+                            <span class="notification-time">{{ formatTimestamp(notification.createdAt) }}</span>
+                        </div>
+                        <div class="notification-actions">
+                            <button class="notification-action-btn" *ngIf="notification.read"
+                                (click)="markAsUnread(notification, $event)" title="Označi kao nepročitano">
+                                ○
+                            </button>
+                            <button class="notification-action-btn delete-btn"
+                                (click)="deleteNotification(notification, $event)" title="Obriši">
+                                ×
+                            </button>
+                            <span class="notification-arrow" *ngIf="notification.action">→</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="notification-empty" *ngIf="notifications.length === 0">
+                    <span class="empty-icon">✅</span>
+                    <p>Nema novih obavijesti!</p>
+                </div>
+            </div>
+        </div>
+        }
+
+        <button class="hamburger" [class.active]="isMenuOpen" (click)="toggleMenu()" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </div>
+
+    <!-- Notification Overlay -->
+    <div class="notification-overlay" *ngIf="showNotifications" (click)="closeNotifications()"></div>
+    <nav [class.open]="isMenuOpen">
+        <ul>
+            <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
+                    (click)="closeMenu()">O kursevima</a>
+            </li>
+            <li><a routerLink="/kursevi" routerLinkActive="active" (click)="closeMenu()">Popis kurseva</a></li>
+            <li><a routerLink="/raspored" routerLinkActive="active" (click)="closeMenu()">Raspored kurseva</a></li>
+            <li><a routerLink="/kontakt" routerLinkActive="active" (click)="closeMenu()">Kontakt</a></li>
+            <li class="spacer"></li>
+            @if (!isAuthenticated()) {
+            <li class="auth-link"><a routerLink="/login" routerLinkActive="active" (click)="closeMenu()">Prijava</a>
+            </li>
+            }
+            @if (isAuthenticated()) {
+            <li class="auth-link"><a routerLink="/dashboard" routerLinkActive="active"
+                    (click)="closeMenu()">Dashboard</a></li>
+            <li class="auth-link"><a routerLink="/fun-zone" routerLinkActive="active" (click)="closeMenu()">Student Fun
+                    Zone</a></li>
+            <li class="auth-link"><a routerLink="/my-trackers" routerLinkActive="active" (click)="closeMenu()">My
+                    Trackers</a></li>
+            }
+        </ul>
+    </nav>
+</header>

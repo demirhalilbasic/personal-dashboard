@@ -1,0 +1,339 @@
+/* You can add global styles to this file, and also import other style files */
+
+/* Theme CSS Variables - Default values */
+:root {
+  --color-primary: #345aaa;
+  --color-secondary: #2a4a8a;
+  --color-accent: #ff9800;
+  --color-background: #f5f5f5;
+  --color-surface: #ffffff;
+  --color-text: #333333;
+  --color-textSecondary: #666666;
+}
+
+/* IPI Akademija Global Styles */
+html {
+  background: linear-gradient(135deg, #e8f0f7 0%, #d4e3f0 50%, #c5d9ed 100%);
+  background-attachment: fixed;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  height: 100%;
+}
+
+body {
+  font-size: 12px;
+  font-family: Verdana, Arial, sans-serif;
+  color: #484645;
+  margin: 0;
+  line-height: 1.6;
+  overflow-x: hidden;
+  min-height: 100%;
+}
+
+/* App root flex layout to prevent extra white space */
+app-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+a,
+a:hover,
+a:visited,
+a:active {
+  color: #345aaa;
+  font-weight: bold;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #2a4a8a;
+  text-decoration: underline;
+}
+
+h2,
+h3 {
+  color: var(--color-primary, #345aaa);
+}
+
+/* Article Styles */
+article {
+  width: 80%;
+  margin: 20px auto;
+  background-color: white;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  padding: 20px 40px;
+  box-sizing: border-box;
+  border-bottom: 2px solid #2a4a8a;
+  min-height: 600px;
+}
+
+article h2 {
+  font-size: 28px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 3px solid #345aaa;
+  display: inline-block;
+  position: relative;
+}
+
+article h2::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 40%;
+  height: 3px;
+  background: #2a4a8a;
+  transition: width 0.35s ease;
+}
+
+article h2:hover::after {
+  width: 100%;
+}
+
+article h3 {
+  font-size: 20px;
+  margin-top: 25px;
+  margin-bottom: 12px;
+}
+
+article p {
+  line-height: 1.8;
+  margin-bottom: 15px;
+}
+
+article img {
+  float: right;
+  margin-right: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+article img:hover {
+  transform: scale(1.05) rotate(1deg);
+  box-shadow: 0 6px 20px rgba(52, 90, 170, 0.25);
+}
+
+/* Table Styles */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+table:hover {
+  box-shadow: 0 4px 20px rgba(52, 90, 170, 0.15);
+}
+
+td,
+th {
+  font-size: 12px;
+  border: solid 1px #d0d7e2;
+  padding: 10px 8px;
+}
+
+th {
+  color: #fff;
+  background-color: #345aaa;
+  height: 35px;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+td:nth-child(4) {
+  text-align: right;
+  padding-right: 5px;
+}
+
+tr:nth-child(odd) {
+  background-color: #f5f7fa;
+}
+
+tr:nth-child(even) {
+  background-color: #ffffff;
+}
+
+tr:hover {
+  background-color: #e8f0fe;
+  transform: scale(1.002);
+  transition: all 0.2s ease;
+}
+
+/* Button Styles */
+button {
+  background-color: #345aaa;
+  color: white;
+  font-weight: bold;
+  border: none;
+  padding: 10px 30px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+button:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+button:hover {
+  background-color: #2a4a8a;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(52, 90, 170, 0.3);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* Contact Page Layout */
+.contact-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-top: 30px;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-form-wrapper {
+  background: #f8f9fb;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.modern-form .form-group {
+  margin-bottom: 20px;
+}
+
+.modern-form label {
+  display: block;
+  font-weight: 600;
+  color: #345aaa;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.modern-form input[type='text'],
+.modern-form input[type='email'],
+.modern-form textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #dde4ee;
+  border-radius: 8px;
+  font-size: 13px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.modern-form input:focus,
+.modern-form textarea:focus {
+  outline: none;
+  border-color: #345aaa;
+  box-shadow: 0 0 0 3px rgba(52, 90, 170, 0.1);
+}
+
+.modern-form textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.modern-form .error {
+  display: none;
+  color: #d32f2f;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.modern-form .submit-btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 15px;
+  background: linear-gradient(135deg, #345aaa 0%, #2a4a8a 100%);
+  margin-top: 10px;
+}
+
+.modern-form .success-msg {
+  display: none;
+  color: #2a4a8a;
+  font-weight: bold;
+  margin-top: 15px;
+  padding: 12px;
+  background: #e8f5e9;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.country-detect {
+  margin-top: 6px;
+  display: none;
+  font-size: 12px;
+}
+
+.country-detect span {
+  font-weight: bold;
+  color: #345aaa;
+}
+
+.country-detect img {
+  height: 16px;
+  vertical-align: middle;
+  margin-left: 6px;
+  display: none;
+}
+
+.schedule-img {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  width: 170px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  opacity: 0.95;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+}
+
+.schedule-img:hover {
+  transform: scale(1.05) rotate(1deg);
+  box-shadow: 0 6px 20px rgba(52, 90, 170, 0.25);
+  opacity: 1;
+}
+
+@media (max-width: 900px) {
+  .contact-layout {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .contact-form-wrapper {
+    padding: 20px;
+  }
+}

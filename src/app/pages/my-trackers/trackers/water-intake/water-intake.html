@@ -1,0 +1,170 @@
+<div class="tracker-container">
+    <div class="tracker-content">
+        <!-- Header -->
+        <div class="tracker-header">
+            <div class="header-left">
+                <button class="btn-back" routerLink="/my-trackers">← Nazad</button>
+                <div class="tracker-title" *ngIf="tracker">
+                    <span class="tracker-icon" [style.backgroundColor]="tracker.color + '20'">{{ tracker.icon }}</span>
+                    <div class="title-text">
+                        <h1>{{ tracker.name }}</h1>
+                        <p>{{ tracker.description }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <span class="stat-icon">🔥</span>
+                    <span class="stat-value">{{ streak }}</span>
+                    <span class="stat-label">streak</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">📊</span>
+                    <span class="stat-value">{{ weeklyProgress }}%</span>
+                    <span class="stat-label">sedmica</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">📈</span>
+                    <span class="stat-value">{{ monthlyProgress }}%</span>
+                    <span class="stat-label">mjesec</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Date Selector -->
+        <div class="date-section">
+            <button class="date-picker-btn" (click)="toggleDatePicker()">
+                <span class="date-icon">📅</span>
+                <span class="date-text">{{ formatDateShort(selectedDate) }}</span>
+                <span class="date-arrow">▼</span>
+            </button>
+
+            <!-- Date Picker Popup -->
+            <div class="date-picker-popup" *ngIf="showDatePicker">
+                <div class="date-option" *ngFor="let date of dateOptions" [class.active]="selectedDate === date"
+                    [class.today]="isToday(date)" (click)="selectDate(date)">
+                    <span class="date-day">{{ getDayName(date) }}</span>
+                    <span class="date-full">{{ formatDateShort(date) }}</span>
+                    <span class="date-badge" *ngIf="isToday(date)">Danas</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popup Overlay -->
+        <div class="date-picker-overlay" *ngIf="showDatePicker" (click)="closeDatePicker()"></div>
+
+        <!-- Loading -->
+        <div class="loading" *ngIf="isLoading">
+            <div class="spinner"></div>
+            <p>Učitavanje...</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content" *ngIf="!isLoading">
+            <!-- Water Bottle Visual -->
+            <div class="water-section">
+                <div class="water-bottle">
+                    <div class="bottle-cap"></div>
+                    <div class="bottle-body">
+                        <div class="water-level" [style.height.%]="getWaterLevel()">
+                        </div>
+                        <div class="bottle-markings">
+                            <span *ngFor="let mark of [100, 75, 50, 25]" [style.bottom.%]="mark">{{ mark }}%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="water-info">
+                    <div class="water-count">
+                        <span class="count-current">{{ glasses }}</span>
+                        <span class="count-separator">/</span>
+                        <span class="count-goal">{{ goal }}</span>
+                    </div>
+                    <p class="water-label">čaša vode</p>
+                    <p class="water-ml">≈ {{ glasses * 250 }} ml</p>
+
+                    <div class="water-controls">
+                        <button class="btn-water remove" (click)="removeGlass()" [disabled]="glasses === 0">−</button>
+                        <button class="btn-water add" (click)="addGlass()" [disabled]="glasses >= goal">+</button>
+                    </div>
+
+                    <div class="goal-section">
+                        <label>🎯 Dnevni cilj:</label>
+                        <div class="goal-options">
+                            <button *ngFor="let g of [6, 8, 10, 12]" class="goal-btn" [class.active]="goal === g"
+                                (click)="setGoal(g)">{{ g }}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Glasses Visual -->
+            <div class="glasses-section">
+                <h3>💧 Današnji unos</h3>
+                <div class="glasses-grid">
+                    <div class="glass" *ngFor="let filled of glassesArray; let i = index" [class.filled]="filled"
+                        (click)="setGlasses(i + 1)">
+                        <div class="glass-water" *ngIf="filled"></div>
+                        <span class="glass-number">{{ i + 1 }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Times Log -->
+            <div class="times-section" *ngIf="times.length > 0">
+                <h3>⏰ Vremena unosa</h3>
+                <div class="times-list">
+                    <span class="time-badge" *ngFor="let time of times">{{ time }}</span>
+                </div>
+            </div>
+
+            <!-- Weekly Chart -->
+            <div class="chart-section">
+                <h2>📊 Sedmični pregled</h2>
+                <div class="bar-chart">
+                    <div class="chart-grid">
+                        <div class="grid-line" *ngFor="let line of [goal, goal*0.75, goal*0.5, goal*0.25, 0]">
+                            <span class="grid-label">{{ line | number:'1.0-0' }}</span>
+                        </div>
+                    </div>
+                    <div class="bars-container">
+                        <div class="bar-item" *ngFor="let data of weeklyData">
+                            <div class="bar" [style.height.%]="(data.glasses / goal) * 100">
+                                <span class="bar-value">{{ data.glasses }}</span>
+                            </div>
+                            <span class="bar-label">{{ data.day }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="tips-section">
+                <h3>💡 Savjeti za hidrataciju</h3>
+                <div class="tips-grid">
+                    <div class="tip-card">
+                        <span class="tip-icon">🌅</span>
+                        <p>Popijte čašu vode odmah ujutro</p>
+                    </div>
+                    <div class="tip-card">
+                        <span class="tip-icon">🍽️</span>
+                        <p>Pijte vodu prije svakog obroka</p>
+                    </div>
+                    <div class="tip-card">
+                        <span class="tip-icon">📱</span>
+                        <p>Postavite podsjetnike na telefon</p>
+                    </div>
+                    <div class="tip-card">
+                        <span class="tip-icon">🏃</span>
+                        <p>Povećajte unos za vrijeme vježbanja</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Saving Indicator -->
+        <div class="saving-indicator" *ngIf="isSaving">
+            <span>💾 Spremanje...</span>
+        </div>
+    </div>
+</div>

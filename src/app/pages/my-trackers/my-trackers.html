@@ -1,0 +1,175 @@
+<div class="my-trackers-container">
+    <div class="my-trackers-content">
+        <!-- Header -->
+        <div class="page-header">
+            <div class="welcome-section">
+                <h1>{{ currentTheme?.emoji }} My Trackers</h1>
+                <p>Praćenje napretka i statistika učenja</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-settings-tracker" (click)="openSettingsModal()">⚙️ Odaberi Trackere</button>
+                <button class="btn-settings" routerLink="/dashboard">⬅️ Dashboard</button>
+                <button class="btn-logout" (click)="logout()">🚪 Odjava</button>
+            </div>
+        </div>
+
+        <!-- Time & Countdown Section -->
+        <div class="time-section">
+            <div class="current-time-card">
+                <div class="time-display">
+                    <div class="time-main">
+                        <span class="time-digits">{{ currentTime.hours }}</span>
+                        <span class="time-separator">:</span>
+                        <span class="time-digits">{{ currentTime.minutes }}</span>
+                        <span class="time-separator blink">:</span>
+                        <span class="time-digits seconds">{{ currentTime.seconds }}</span>
+                    </div>
+                    <div class="date-display">
+                        <span class="day-name">{{ currentTime.dayOfWeek }}</span>
+                        <span class="date-full">{{ currentTime.day }}. {{ currentTime.month }} {{ currentTime.year
+                            }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="countdown-card" [style.borderColor]="getCountdownColor()">
+                <div class="countdown-header">
+                    <span class="countdown-icon" *ngIf="!allCompleted">⏰</span>
+                    <span class="countdown-icon" *ngIf="allCompleted">🎉</span>
+                    <span class="countdown-title" *ngIf="!allCompleted">Vrijeme do ponoći</span>
+                    <span class="countdown-title" *ngIf="allCompleted">Svi trackeri popunjeni!</span>
+                </div>
+                <div class="countdown-display" [style.color]="getCountdownColor()">
+                    <div class="countdown-unit">
+                        <span class="countdown-number">{{ countdown.hours }}</span>
+                        <span class="countdown-label">sati</span>
+                    </div>
+                    <span class="countdown-sep">:</span>
+                    <div class="countdown-unit">
+                        <span class="countdown-number">{{ countdown.minutes }}</span>
+                        <span class="countdown-label">minuta</span>
+                    </div>
+                    <span class="countdown-sep">:</span>
+                    <div class="countdown-unit">
+                        <span class="countdown-number">{{ countdown.seconds }}</span>
+                        <span class="countdown-label">sekundi</span>
+                    </div>
+                </div>
+                <div class="completion-bar">
+                    <div class="completion-progress" [style.width.%]="completionPercentage"
+                        [class.completed]="allCompleted">
+                    </div>
+                </div>
+                <p class="completion-text">{{ completionPercentage }}% trackera popunjeno danas ({{
+                    todayStatus?.completedTrackers || 0 }}/{{ todayStatus?.totalTrackers || 0 }})</p>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading-container" *ngIf="isLoading">
+            <div class="loading-card">
+                <div class="loading-spinner">
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-icon">📊</div>
+                </div>
+                <h3 class="loading-title">Učitavanje trackera</h3>
+                <p class="loading-subtitle">Molimo pričekajte...</p>
+                <div class="loading-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trackers Grid -->
+        <div class="trackers-section" *ngIf="!isLoading">
+            <h2 class="section-title">📊 Moji Trackeri</h2>
+            <div class="trackers-grid" *ngIf="enabledTrackers.length > 0">
+                <div class="tracker-card" *ngFor="let tracker of enabledTrackers"
+                    [class.completed]="isTrackerCompletedToday(tracker.id)" (click)="navigateToTracker(tracker.id)"
+                    [style.borderLeftColor]="tracker.color">
+                    <div class="tracker-icon" [style.backgroundColor]="tracker.color + '20'">
+                        {{ tracker.icon }}
+                    </div>
+                    <div class="tracker-info">
+                        <h3>{{ tracker.name }}</h3>
+                        <p>{{ tracker.description }}</p>
+                    </div>
+                    <div class="tracker-status" *ngIf="isTrackerCompletedToday(tracker.id)">✅</div>
+                    <div class="tracker-arrow">→</div>
+                </div>
+            </div>
+            <div class="no-trackers" *ngIf="enabledTrackers.length === 0">
+                <p>🔧 Niste odabrali nijedan tracker. Kliknite na "Odaberi Trackere" gore desno.</p>
+            </div>
+        </div>
+
+        <!-- Calendar Section -->
+        <div class="calendar-section">
+            <h2 class="section-title">📅 Kalendar napretka</h2>
+            <div class="calendar-card" [class.loading]="isCalendarLoading">
+                <div class="calendar-header">
+                    <button class="calendar-nav" (click)="previousMonth()">←</button>
+                    <h3 class="calendar-month">{{ monthNames[currentMonth] }} {{ currentYear }}</h3>
+                    <button class="calendar-nav" (click)="nextMonth()">→</button>
+                    <button class="calendar-today" (click)="goToToday()">Danas</button>
+                </div>
+                <div class="calendar-loading-indicator" *ngIf="isCalendarLoading">
+                    <span class="calendar-loading-spinner"></span>
+                    <span>Učitavanje statusa...</span>
+                </div>
+                <div class="calendar-legend">
+                    <span class="legend-item"><span class="legend-dot all"></span> Svi popunjeni</span>
+                    <span class="legend-item"><span class="legend-dot partial"></span> Djelomično</span>
+                    <span class="legend-item"><span class="legend-dot none"></span> Ništa</span>
+                </div>
+                <div class="calendar-grid">
+                    <div class="calendar-day-name" *ngFor="let day of dayNames">{{ day }}</div>
+                    <div class="calendar-day" *ngFor="let day of calendarDays" [class.other-month]="!day.isCurrentMonth"
+                        [class.today]="day.isToday" [class]="getDayStatusClass(day)">
+                        <span class="day-number">{{ day.day }}</span>
+                        <span class="day-indicator" *ngIf="day.status && day.isCurrentMonth">
+                            {{ day.status.completedTrackers }}/{{ day.status.totalTrackers }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" *ngIf="showSettingsModal" (click)="closeSettingsModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>⚙️ Odaberi Trackere</h2>
+            <button class="modal-close" (click)="closeSettingsModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <p class="modal-description">Odaberite trackere koje želite koristiti. Možete ih kasnije promijeniti.</p>
+
+            <div class="tracker-categories">
+                <div class="category-group"
+                    *ngFor="let category of ['health', 'productivity', 'wellness', 'finance', 'personal']">
+                    <h3 class="category-title">{{ getCategoryName(category) }}</h3>
+                    <div class="category-trackers">
+                        <label class="tracker-option" *ngFor="let tracker of getTrackersByCategory(category)"
+                            [class.selected]="isTrackerSelected(tracker.id)">
+                            <input type="checkbox" [checked]="isTrackerSelected(tracker.id)"
+                                (change)="toggleTracker(tracker.id)">
+                            <span class="tracker-option-icon">{{ tracker.icon }}</span>
+                            <span class="tracker-option-name">{{ tracker.name }}</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" (click)="closeSettingsModal()">Otkaži</button>
+            <button class="btn-save" (click)="saveTrackerSettings()">💾 Spremi</button>
+        </div>
+    </div>
+</div>

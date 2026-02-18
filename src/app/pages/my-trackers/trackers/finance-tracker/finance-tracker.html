@@ -1,0 +1,171 @@
+<div class="tracker-container">
+    <div class="tracker-content">
+        <div class="tracker-header">
+            <div class="header-left">
+                <button class="btn-back" routerLink="/my-trackers">← Nazad</button>
+                <div class="tracker-title" *ngIf="tracker">
+                    <span class="tracker-icon" [style.backgroundColor]="tracker.color + '20'">{{ tracker.icon }}</span>
+                    <div class="title-text">
+                        <h1>{{ tracker.name }}</h1>
+                        <p>{{ tracker.description }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item"><span class="stat-icon">🔥</span><span class="stat-value">{{ streak
+                        }}</span><span class="stat-label">streak</span></div>
+                <div class="stat-item"><span class="stat-icon">📊</span><span class="stat-value">{{ weeklyProgress
+                        }}%</span><span class="stat-label">sedmica</span></div>
+            </div>
+        </div>
+
+        <!-- Date Selector -->
+        <div class="date-section">
+            <button class="date-picker-btn" (click)="toggleDatePicker()">
+                <span class="date-icon">📅</span>
+                <span class="date-text">{{ formatDateShort(selectedDate) }}</span>
+                <span class="date-arrow">▼</span>
+            </button>
+
+            <!-- Date Picker Popup -->
+            <div class="date-picker-popup" *ngIf="showDatePicker">
+                <div class="date-option" *ngFor="let date of dateOptions" [class.active]="selectedDate === date"
+                    [class.today]="isToday(date)" (click)="selectDate(date)">
+                    <span class="date-day">{{ getDayName(date) }}</span>
+                    <span class="date-full">{{ formatDateShort(date) }}</span>
+                    <span class="date-badge" *ngIf="isToday(date)">Danas</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popup Overlay -->
+        <div class="date-picker-overlay" *ngIf="showDatePicker" (click)="closeDatePicker()"></div>
+
+        <div class="loading" *ngIf="isLoading">
+            <div class="spinner"></div>
+            <p>Učitavanje...</p>
+        </div>
+
+        <div class="main-content" *ngIf="!isLoading">
+            <div class="summary-cards">
+                <div class="summary-card income">
+                    <span class="summary-icon">💵</span>
+                    <div class="summary-info">
+                        <span class="summary-label">Prihodi</span>
+                        <span class="summary-value">{{ totalIncome | number:'1.2-2' }} KM</span>
+                    </div>
+                </div>
+                <div class="summary-card expense">
+                    <span class="summary-icon">💸</span>
+                    <div class="summary-info">
+                        <span class="summary-label">Rashodi</span>
+                        <span class="summary-value">{{ totalSpent | number:'1.2-2' }} KM</span>
+                    </div>
+                </div>
+                <div class="summary-card balance" [class.positive]="getBalance() >= 0"
+                    [class.negative]="getBalance() < 0">
+                    <span class="summary-icon">💰</span>
+                    <div class="summary-info">
+                        <span class="summary-label">Bilans</span>
+                        <span class="summary-value">{{ getBalance() | number:'1.2-2' }} KM</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="budget-section">
+                <div class="budget-header">
+                    <h3>📊 Dnevni budžet</h3>
+                    <div class="budget-input-wrap">
+                        <input type="number" [(ngModel)]="dailyBudget" min="0" (change)="saveData()">
+                        <span>KM</span>
+                    </div>
+                </div>
+                <div class="budget-bar-container">
+                    <div class="budget-bar" [style.width.%]="getBudgetPercentage()"
+                        [style.backgroundColor]="getBudgetColor()"></div>
+                </div>
+                <div class="budget-info">
+                    <span>Potrošeno: {{ totalSpent | number:'1.2-2' }} KM</span>
+                    <span>Preostalo: {{ (dailyBudget - totalSpent) | number:'1.2-2' }} KM</span>
+                </div>
+            </div>
+
+            <div class="add-transaction-section">
+                <h3>➕ Nova transakcija</h3>
+                <div class="transaction-type-toggle">
+                    <button [class.active]="newTransaction.type === 'expense'"
+                        (click)="newTransaction.type = 'expense'">💸 Rashod</button>
+                    <button [class.active]="newTransaction.type === 'income'"
+                        (click)="newTransaction.type = 'income'">💵 Prihod</button>
+                </div>
+                <div class="transaction-form">
+                    <div class="form-group">
+                        <label>Iznos (KM)</label>
+                        <input type="number" [(ngModel)]="newTransaction.amount" min="0" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label>Kategorija</label>
+                        <select [(ngModel)]="newTransaction.category">
+                            <option value="">Odaberi...</option>
+                            <ng-container *ngIf="newTransaction.type === 'expense'">
+                                <option *ngFor="let cat of expenseCategories" [value]="cat">{{ cat }}</option>
+                            </ng-container>
+                            <ng-container *ngIf="newTransaction.type === 'income'">
+                                <option *ngFor="let cat of incomeCategories" [value]="cat">{{ cat }}</option>
+                            </ng-container>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Opis (opcionalno)</label>
+                        <input type="text" [(ngModel)]="newTransaction.description" placeholder="Npr. Ručak u kantini">
+                    </div>
+                    <button class="btn-add" (click)="addTransaction()">Dodaj</button>
+                </div>
+            </div>
+
+            <div class="transactions-section">
+                <h3>📝 Današnje transakcije</h3>
+                <div class="transactions-list" *ngIf="transactions.length > 0">
+                    <div class="transaction-item" *ngFor="let t of transactions; trackBy: trackById"
+                        [class.income]="t.type === 'income'" [class.expense]="t.type === 'expense'">
+                        <span class="transaction-category">{{ t.category }}</span>
+                        <div class="transaction-details">
+                            <span class="transaction-desc">{{ t.description || 'Bez opisa' }}</span>
+                            <span class="transaction-time">{{ t.time }}</span>
+                        </div>
+                        <span class="transaction-amount" [class.positive]="t.type === 'income'"
+                            [class.negative]="t.type === 'expense'">
+                            {{ t.type === 'income' ? '+' : '-' }}{{ t.amount | number:'1.2-2' }} KM
+                        </span>
+                        <button class="btn-remove" (click)="removeTransaction(t.id)">✕</button>
+                    </div>
+                </div>
+                <div class="empty-state" *ngIf="transactions.length === 0">
+                    <span>💳</span>
+                    <p>Nema transakcija za ovaj dan</p>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <h3>📈 Sedmični pregled</h3>
+                <div class="weekly-chart">
+                    <div class="chart-bar-group" *ngFor="let d of weeklyData">
+                        <div class="bar-container">
+                            <div class="bar expense-bar" [style.height.%]="(d.spent / getMaxWeeklyAmount()) * 100">
+                            </div>
+                            <div class="bar income-bar" [style.height.%]="(d.income / getMaxWeeklyAmount()) * 100">
+                            </div>
+                        </div>
+                        <span class="bar-label">{{ d.day }}</span>
+                    </div>
+                </div>
+                <div class="chart-legend">
+                    <span class="legend-item"><span class="legend-color income"></span> Prihodi</span>
+                    <span class="legend-item"><span class="legend-color expense"></span> Rashodi</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="saving-indicator" *ngIf="isSaving"><span>💾 Spremanje...</span></div>
+    </div>
+</div>

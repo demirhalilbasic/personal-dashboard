@@ -1,0 +1,125 @@
+<div class="tracker-container">
+    <div class="tracker-content">
+        <div class="tracker-header">
+            <div class="header-left">
+                <button class="btn-back" routerLink="/my-trackers">← Nazad</button>
+                <div class="tracker-title" *ngIf="tracker">
+                    <span class="tracker-icon" [style.backgroundColor]="tracker.color + '20'">{{ tracker.icon }}</span>
+                    <div class="title-text">
+                        <h1>{{ tracker.name }}</h1>
+                        <p>{{ tracker.description }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item"><span class="stat-icon">🔥</span><span class="stat-value">{{ streak
+                        }}</span><span class="stat-label">streak</span></div>
+                <div class="stat-item"><span class="stat-icon">✅</span><span class="stat-value">{{
+                        getCompletionPercentage() }}%</span><span class="stat-label">završeno</span></div>
+            </div>
+        </div>
+
+        <!-- Date Selector -->
+        <div class="date-section">
+            <button class="date-picker-btn" (click)="toggleDatePicker()">
+                <span class="date-icon">📅</span>
+                <span class="date-text">{{ formatDateShort(selectedDate) }}</span>
+                <span class="date-arrow">▼</span>
+            </button>
+
+            <!-- Date Picker Popup -->
+            <div class="date-picker-popup" *ngIf="showDatePicker">
+                <div class="date-option" *ngFor="let date of dateOptions" [class.active]="selectedDate === date"
+                    [class.today]="isToday(date)" (click)="selectDate(date)">
+                    <span class="date-day">{{ getDayName(date) }}</span>
+                    <span class="date-full">{{ formatDateShort(date) }}</span>
+                    <span class="date-badge" *ngIf="isToday(date)">Danas</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popup Overlay -->
+        <div class="date-picker-overlay" *ngIf="showDatePicker" (click)="closeDatePicker()"></div>
+
+        <div class="loading" *ngIf="isLoading">
+            <div class="spinner"></div>
+            <p>Učitavanje...</p>
+        </div>
+
+        <div class="main-content" *ngIf="!isLoading">
+            <div class="progress-bar-section">
+                <div class="progress-info">
+                    <span>{{ getCompletedTasksCount() }} / {{ tasks.length }} zadataka završeno</span>
+                    <span>{{ getCompletionPercentage() }}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" [style.width.%]="getCompletionPercentage()"></div>
+                </div>
+            </div>
+
+            <div class="add-task-section">
+                <h3>➕ Novi zadatak</h3>
+                <div class="task-form">
+                    <div class="form-row">
+                        <div class="form-group flex-2">
+                            <label>Naziv zadatka</label>
+                            <input type="text" [(ngModel)]="newTask.title" placeholder="Što trebaš napraviti?">
+                        </div>
+                        <div class="form-group">
+                            <label>Prioritet</label>
+                            <select [(ngModel)]="newTask.priority">
+                                <option *ngFor="let p of priorities" [value]="p.value">{{ p.label }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Kategorija</label>
+                            <select [(ngModel)]="newTask.category">
+                                <option value="">Odaberi...</option>
+                                <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Do kada</label>
+                            <input type="time" [(ngModel)]="newTask.dueTime">
+                        </div>
+                        <button class="btn-add" (click)="addTask()">+ Dodaj</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tasks-section">
+                <h3>📋 Zadaci za danas</h3>
+                <div class="tasks-list" *ngIf="tasks.length > 0">
+                    <div class="task-item" *ngFor="let task of tasks; trackBy: trackById"
+                        [class.completed]="task.completed" [style.borderLeftColor]="getPriorityColor(task.priority)">
+                        <div class="task-checkbox" (click)="toggleTask(task.id)">
+                            <span *ngIf="task.completed">✓</span>
+                        </div>
+                        <div class="task-info">
+                            <span class="task-title">{{ task.title }}</span>
+                            <div class="task-meta">
+                                <span class="task-category">{{ task.category }}</span>
+                                <span class="task-time" *ngIf="task.dueTime">⏰ {{ task.dueTime }}</span>
+                            </div>
+                        </div>
+                        <span class="task-priority" [style.backgroundColor]="getPriorityColor(task.priority)"></span>
+                        <button class="btn-remove" (click)="removeTask(task.id)">✕</button>
+                    </div>
+                </div>
+                <div class="empty-state" *ngIf="tasks.length === 0">
+                    <span>📋</span>
+                    <p>Nema zadataka za ovaj dan</p>
+                    <p class="hint">Dodajte svoj prvi zadatak iznad!</p>
+                </div>
+            </div>
+
+            <button class="btn-save" (click)="saveData()" [disabled]="isSaving">
+                {{ isSaving ? '💾 Spremanje...' : '💾 Spremi' }}
+            </button>
+        </div>
+
+        <div class="saving-indicator" *ngIf="isSaving"><span>💾 Spremanje...</span></div>
+    </div>
+</div>

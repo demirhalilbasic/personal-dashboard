@@ -1,0 +1,24 @@
+<div class="vision-wrapper">
+    <div class="vision-content">
+        <div class="page-header">
+            <div class="welcome-section">
+                <h1>{{ currentTheme?.emoji }} Vision Board</h1>
+                <p>Kreiraj svoju viziju budućnosti - dodaj bilješke, slike i citate</p>
+            </div>
+            <div class="header-actions">
+                <button routerLink="/fun-zone" class="btn-settings">⬅️ Fun Zone</button>
+                <button (click)="logout()" class="btn-logout">🚪 Odjava</button>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <button (click)="addNote()">📝 Post It</button>
+            <button (click)="addImage()">🖼️ Slika</button>
+            <button (click)="addQuote()">💬 Citat</button>
+            <button (click)="saveBoard()">💾 Snimi</button>
+            <button (click)="clearBoard()" class="btn-danger">🗑️ Očisti</button>
+        </div>
+
+        <div #board id="board"></div>
+    </div>
+</div>

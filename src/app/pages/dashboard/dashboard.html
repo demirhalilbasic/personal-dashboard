@@ -1,0 +1,262 @@
+<div class="dashboard-container">
+    @if (isReady && userData && currentTheme) {
+    <div class="dashboard-content">
+        <!-- Header Section -->
+        <div class="dashboard-header">
+            <div class="welcome-section">
+                <h1>{{ currentTheme.emoji }} {{ userData.spol === 'musko' ? 'Dobrodošao' : 'Dobrodošla' }}, {{
+                    userData.ime }}!</h1>
+                <p>Vaš lični prostor na IPI Akademiji</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-settings" routerLink="/settings">
+                    ⚙️ Postavke
+                </button>
+                <button class="btn-logout" (click)="logout()">
+                    🚪 Odjava
+                </button>
+            </div>
+        </div>
+
+        <!-- Profile + Pomodoro Row -->
+        <div class="profile-pomodoro-row">
+            <!-- Friendly User Overview -->
+            <div class="profile-card">
+                <div class="profile-top">
+                    <div>
+                        <p class="eyebrow">Vaš lični kutak</p>
+                        <h2>{{ currentTheme.emoji }} Hej, {{ userData.ime }}!</h2>
+                        <p class="subtitle">Tema "{{ currentTheme.name }}" je aktivna. Evo kratkog pregleda tvog dana.
+                        </p>
+                        <!-- Daily Trivia -->
+                        @if (dailyTrivia) {
+                        <div class="daily-trivia">
+                            <span class="trivia-icon">{{ dailyTrivia.icon }}</span>
+                            <span class="trivia-text">{{ dailyTrivia.text }}</span>
+                        </div>
+                        }
+                    </div>
+                </div>
+
+                @if (zodiacInfo) {
+                <div class="highlight-row">
+                    @for (item of zodiacInfo.highlights; track item) {
+                    <button class="chip" type="button" (click)="openTraitInsight(item)">{{ item }}</button>
+                    }
+                    <button class="chip soft" type="button" (click)="triggerThemeRain()">Aktivna tema: {{
+                        currentTheme.name
+                        }}</button>
+                </div>
+                }
+            </div>
+
+            <!-- Pomodoro Timer Widget -->
+            <div class="pomodoro-wrapper">
+                <app-pomodoro-timer></app-pomodoro-timer>
+            </div>
+        </div>
+
+        <!-- Zodiac + Horoscope Row -->
+        <div class="zodiac-horoscope-row">
+            @if (zodiacInfo) {
+            <div class="zodiac-card">
+                <div class="zodiac-emoji">{{ zodiacInfo.emoji }}</div>
+                <div class="zodiac-info">
+                    <p class="zodiac-label">{{ zodiacInfo.dateRange }}</p>
+                    <h3>{{ zodiacInfo.name }}</h3>
+                    <p class="zodiac-desc">{{ zodiacInfo.description }}</p>
+                </div>
+            </div>
+            }
+
+            @if (horoscopeStatus !== 'idle' || horoscopeText) {
+            <div class="horoscope-card">
+                <div class="horoscope-header">
+                    <h2>🔮 Dnevni horoskop</h2>
+                    <div class="language-toggle">
+                        <button class="lang-btn" [class.active]="horoscopeLanguage === 'en'"
+                            (click)="toggleHoroscopeLanguage()" [disabled]="horoscopeTranslating">
+                            EN
+                        </button>
+                        <div class="toggle-slider" [style.left]="horoscopeLanguage === 'bs' ? '50%' : '0'"></div>
+                        <button class="lang-btn" [class.active]="horoscopeLanguage === 'bs'"
+                            (click)="toggleHoroscopeLanguage()" [disabled]="horoscopeTranslating">
+                            BS
+                        </button>
+                    </div>
+                </div>
+                @if (horoscopeStatus === 'loading') {
+                <p class="muted">Preuzimam predviđanje...</p>
+                } @else if (horoscopeStatus === 'error') {
+                <p class="muted">Nije moguće dohvatiti horoskop trenutno.</p>
+                } @else {
+                @if (horoscopeTranslating) {
+                <p class="muted">Prevođenje...</p>
+                } @else {
+                <p class="horoscope-text">{{ horoscopeLanguage === 'en' ? horoscopeText : horoscopeTextTranslated }}</p>
+                }
+                }
+            </div>
+            }
+        </div>
+
+        <!-- AI Insight Widget Section - Right after horoscope -->
+        <div class="ai-insight-section">
+            <app-ai-insight-widget></app-ai-insight-widget>
+        </div>
+
+        <!-- Quick Actions near top -->
+        <div class="actions-card">
+            <h2>⚡ Brze Akcije</h2>
+            <div class="actions-grid">
+                <a routerLink="/kursevi" class="action-button">
+                    <span class="action-icon">📚</span>
+                    <span class="action-text">Kursevi</span>
+                </a>
+                <a routerLink="/raspored" class="action-button">
+                    <span class="action-icon">📅</span>
+                    <span class="action-text">Raspored</span>
+                </a>
+                <a routerLink="/fun-zone" class="action-button">
+                    <span class="action-icon">🎮</span>
+                    <span class="action-text">Student Fun Zone</span>
+                </a>
+                <a routerLink="/my-trackers" class="action-button">
+                    <span class="action-icon">📊</span>
+                    <span class="action-text">My Trackers</span>
+                </a>
+                <a routerLink="/kontakt" class="action-button">
+                    <span class="action-icon">📧</span>
+                    <span class="action-text">Kontakt</span>
+                </a>
+                <a routerLink="/settings" class="action-button">
+                    <span class="action-icon">🎨</span>
+                    <span class="action-text">Promijeni Temu</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Leaderboard & Theme Row (side-by-side on desktop) -->
+        <div class="leaderboard-theme-row">
+            <!-- Monthly Leaderboard -->
+            <div class="leaderboard-wrapper">
+                <app-leaderboard-slider></app-leaderboard-slider>
+            </div>
+
+            <!-- Theme Description Card -->
+            <div class="theme-card">
+                <h2>🎨 Vaša Odabrana Tema</h2>
+                <div class="theme-showcase">
+                    <div class="theme-icon">{{ currentTheme.emoji }}</div>
+                    <h3>{{ currentTheme.name }}</h3>
+                    <p class="theme-description-text">{{ getCurrentDescription() }}</p>
+                    <div class="theme-colors">
+                        <div class="color-swatch" [style.background]="currentTheme.colors.primary" title="Primary">
+                        </div>
+                        <div class="color-swatch" [style.background]="currentTheme.colors.secondary" title="Secondary">
+                        </div>
+                        <div class="color-swatch" [style.background]="currentTheme.colors.accent" title="Accent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weather Widget Section -->
+        <div class="weather-section">
+            <app-weather-widget></app-weather-widget>
+        </div>
+    </div>
+
+    @if (themeEmojiRainActive) {
+    <div class="theme-emoji-rain" aria-hidden="true">
+        @for (e of themeEmojiRain; track $index) {
+        <span [style.left.%]="5 + ($index * 6)" [style.animationDelay.s]="$index * 0.15">{{ e }}</span>
+        }
+    </div>
+    }
+    } @else if (isReady && loadError) {
+    <div class="loading">
+        <p>{{ loadError }}</p>
+    </div>
+    } @else {
+    <div class="loading">
+        <div class="loader-pulse" aria-label="Loading"></div>
+    </div>
+    }
+
+    @if (insightOpen) {
+    <div class="insight-backdrop">
+        <div class="insight-modal" (click)="$event.stopPropagation()">
+            <div class="insight-emoji-rain" aria-hidden="true">
+                <span>✨</span><span>⭐</span><span>💫</span><span>🌙</span><span>✨</span><span>⭐</span><span>💫</span><span>🌙</span><span>✨</span><span>⭐</span>
+            </div>
+            <div class="insight-content">
+                <div class="insight-header">
+                    <h3>✨ Personalizirani uvid</h3>
+                    <button class="close-btn" (click)="closeInsight()">✕</button>
+                </div>
+                @if (insightStatus === 'loading') {
+                <p class="insight-text center">{{ loadingMessages[loadingMessageIndex] }}</p>
+                } @else {
+                <p class="insight-text center">{{ insightText }}</p>
+                }
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- Pomodoro Blocking Overlay -->
+    @if (isPomodoroBlocking() && pomodoroSession) {
+    <div class="pomodoro-overlay">
+        <div class="pomodoro-overlay-content">
+            <div class="pomodoro-modal">
+                <div class="pomodoro-modal-header">
+                    <span class="pomodoro-emoji">🍅</span>
+                    <h2>Pomodoro Sesija</h2>
+                </div>
+
+                <div class="pomodoro-subject">
+                    📚 {{ pomodoroSession.subject }}
+                </div>
+
+                <div class="pomodoro-timer-big">
+                    <div class="timer-state-label">{{ getPomodoroStateLabel() }}</div>
+                    <div class="timer-countdown">{{ formatPomodoroTime() }}</div>
+                </div>
+
+                <div class="pomodoro-stats-row">
+                    <div class="pomodoro-stat">
+                        <span class="stat-value">{{ pomodoroSession.completedSessions }}</span>
+                        <span class="stat-label">Sesija</span>
+                    </div>
+                    <div class="pomodoro-stat">
+                        <span class="stat-value">{{ Math.floor(pomodoroSession.totalFocusTime / 60) }}</span>
+                        <span class="stat-label">Min fokusa</span>
+                    </div>
+                </div>
+
+                <p class="pomodoro-motivation">
+                    @if (pomodoroSession.state === 'countdown') {
+                    ⏳ Pripremi se za fokusiranje...
+                    } @else if (pomodoroSession.state === 'focus') {
+                    🧠 Ostani fokusiran! Ostatak stranice je zaključan dok si u sesiji.
+                    } @else if (pomodoroSession.state === 'break') {
+                    ☕ Vrijeme za kratku pauzu. Opusti se!
+                    }
+                </p>
+
+                <div class="pomodoro-actions">
+                    @if (pomodoroSession.state === 'focus' || pomodoroSession.state === 'break') {
+                    <button class="pomodoro-btn pause" (click)="pomodoroService.pauseSession()">
+                        ⏸️ Pauziraj
+                    </button>
+                    }
+                    <button class="pomodoro-btn end" (click)="pomodoroService.endSession()">
+                        ✖️ Završi sesiju
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+</div>

@@ -1,0 +1,143 @@
+.fun-zone-container {
+  min-height: 100vh;
+  background: var(--color-background, #f5f5f5);
+  padding: 50px 0;
+  transition: background 0.3s ease;
+}
+
+.fun-zone-content {
+  width: 80%;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.welcome-section h1 {
+  color: var(--color-text, #333);
+  font-size: 2.5rem;
+  margin-bottom: 5px;
+  animation: fadeIn 0.5s ease;
+}
+
+.welcome-section p {
+  color: var(--color-textSecondary, #666);
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.btn-settings,
+.btn-logout {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  box-sizing: border-box;
+}
+
+.btn-settings {
+  background: var(--color-secondary, #6b8e23);
+  color: white;
+}
+
+.btn-logout {
+  background: var(--color-primary, #345aaa);
+  color: white;
+}
+
+.btn-settings:hover,
+.btn-logout:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.game-card {
+  background: var(--color-surface, white);
+  border-radius: 12px;
+  padding: 30px;
+  text-decoration: none;
+  color: var(--color-text, inherit);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border: 2px solid transparent;
+}
+
+.game-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  border-color: var(--color-accent, #345aaa);
+}
+
+.game-icon {
+  font-size: 4rem;
+  margin-bottom: 15px;
+}
+
+.game-card h3 {
+  color: var(--color-primary, #345aaa);
+  margin: 10px 0;
+  font-size: 1.5rem;
+}
+
+.game-card p {
+  color: var(--color-text-secondary, #666);
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .games-grid {
+    grid-template-columns: 1fr;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  .fun-zone-container {
+    padding: 20px 15px;
+  }
+}

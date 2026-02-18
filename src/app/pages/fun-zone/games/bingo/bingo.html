@@ -1,0 +1,98 @@
+<div class="bingo-wrapper">
+    <div class="bingo-content">
+        <div class="page-header">
+            <div class="welcome-section">
+                <h2>{{ currentTheme?.emoji }} Bingo</h2>
+                <p>Popuni red, kolonu ili dijagonalu – klikni na polje da ga označiš</p>
+            </div>
+            <div class="header-actions">
+                <button (click)="toggleStatsPanel()" class="btn-stats">📊 Statistika</button>
+                <button routerLink="/fun-zone" class="btn-settings">⬅️ Fun Zone</button>
+                <button (click)="logout()" class="btn-logout">🚪 Odjava</button>
+            </div>
+        </div>
+
+        <!-- Timer Display -->
+        <div class="timer-display" [class.active]="gameInProgress">
+            <span class="timer-icon">⏱️</span>
+            <span class="timer-value">{{ elapsedTime }}</span>
+            <span class="timer-label" *ngIf="gameInProgress">Vrijeme igre</span>
+        </div>
+
+        <div class="controls">
+            <button (click)="generateCard()">🎴 Nova kartica</button>
+            <button (click)="resetMarks()">🔄 Reset oznaka</button>
+            <button (click)="exportPdf()">🖨️ Print / PDF</button>
+        </div>
+        <div class="status" [class.win]="winShown">{{ statusText }}</div>
+        <table class="bingo-table" aria-label="Bingo tabla">
+            <tbody>
+                <tr *ngFor="let row of cells">
+                    <td *ngFor="let cell of row" [class.free]="cell.free" [class.marked]="cell.marked"
+                        (click)="toggleCell(cell)" class="bingo-cell">
+                        {{ cell.text }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Bingo Win Overlay -->
+<div class="modal-overlay" [class.visible]="showOverlay" role="dialog" aria-modal="true"
+    aria-labelledby="bingoWinTitle">
+    <div class="modal-card">
+        <button class="modal-close-btn" type="button" aria-label="Zatvori" (click)="closeOverlay()">×</button>
+        <h2 id="bingoWinTitle">🎉 BINGO!</h2>
+        <p id="bingoWinMsg">Čestitamo – osvojili ste <strong>{{ winType }}</strong>!</p>
+        <p class="win-time">Vrijeme: <strong>{{ elapsedTime }}</strong></p>
+        <div class="modal-actions">
+            <button type="button" (click)="newGame()">Nova kartica</button>
+            <button type="button" (click)="resetFromOverlay()">Reset oznaka</button>
+            <button type="button" (click)="closeOverlay()">Nastavi igru</button>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Panel -->
+<div class="stats-panel" [class.visible]="showStatsPanel">
+    <div class="stats-card">
+        <button class="stats-close-btn" type="button" aria-label="Zatvori" (click)="toggleStatsPanel()">×</button>
+        <h3>📊 Tvoja Bingo Statistika</h3>
+
+        <div class="stats-loading" *ngIf="!stats">
+            <span>Učitavanje...</span>
+        </div>
+
+        <div class="stats-grid" *ngIf="stats">
+            <div class="stat-item">
+                <span class="stat-value">{{ stats.gamesPlayed }}</span>
+                <span class="stat-label">Odigrano igara</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ stats.wins }}</span>
+                <span class="stat-label">Pobjeda</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ formatTime(stats.shortestGameSeconds) }}</span>
+                <span class="stat-label">Najbrža pobjeda</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ formatTotalTime(stats.totalTimePlayedSeconds) }}</span>
+                <span class="stat-label">Ukupno vrijeme</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ stats.winStreak }}</span>
+                <span class="stat-label">Trenutni niz</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ stats.bestWinStreak }}</span>
+                <span class="stat-label">Najbolji niz</span>
+            </div>
+        </div>
+
+        <p class="stats-note" *ngIf="stats?.gamesPlayed === 0">
+            Odigraj prvu igru da počneš skupljati statistiku! 🎮
+        </p>
+    </div>
+</div>

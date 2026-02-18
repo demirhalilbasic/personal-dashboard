@@ -1,0 +1,129 @@
+<div class="tracker-container">
+    <div class="tracker-content">
+        <div class="tracker-header">
+            <div class="header-left">
+                <button class="btn-back" routerLink="/my-trackers">← Nazad</button>
+                <div class="tracker-title" *ngIf="tracker">
+                    <span class="tracker-icon" [style.backgroundColor]="tracker.color + '20'">{{ tracker.icon }}</span>
+                    <div class="title-text">
+                        <h1>{{ tracker.name }}</h1>
+                        <p>{{ tracker.description }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item"><span class="stat-icon">🔥</span><span class="stat-value">{{ streak
+                        }}</span><span class="stat-label">streak</span></div>
+                <div class="stat-item"><span class="stat-icon">📊</span><span class="stat-value">{{ weeklyProgress
+                        }}%</span><span class="stat-label">sedmica</span></div>
+            </div>
+        </div>
+
+        <!-- Date Selector -->
+        <div class="date-section">
+            <button class="date-picker-btn" (click)="toggleDatePicker()">
+                <span class="date-icon">📅</span>
+                <span class="date-text">{{ formatDateShort(selectedDate) }}</span>
+                <span class="date-arrow">▼</span>
+            </button>
+
+            <!-- Date Picker Popup -->
+            <div class="date-picker-popup" *ngIf="showDatePicker">
+                <div class="date-option" *ngFor="let date of dateOptions" [class.active]="selectedDate === date"
+                    [class.today]="isToday(date)" (click)="selectDate(date)">
+                    <span class="date-day">{{ getDayName(date) }}</span>
+                    <span class="date-full">{{ formatDateShort(date) }}</span>
+                    <span class="date-badge" *ngIf="isToday(date)">Danas</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popup Overlay -->
+        <div class="date-picker-overlay" *ngIf="showDatePicker" (click)="closeDatePicker()"></div>
+
+        <div class="loading" *ngIf="isLoading">
+            <div class="spinner"></div>
+            <p>Učitavanje...</p>
+        </div>
+
+        <div class="main-content" *ngIf="!isLoading">
+            <div class="summary-cards">
+                <div class="summary-card calories">
+                    <div class="card-icon">🔥</div>
+                    <div class="card-info">
+                        <span class="card-value">{{ getTotalCalories() }}</span>
+                        <span class="card-label">/ {{ calorieGoal }} kcal</span>
+                    </div>
+                    <div class="calorie-bar">
+                        <div class="calorie-fill" [style.width.%]="getCaloriePercentage()"></div>
+                    </div>
+                </div>
+                <div class="summary-card water">
+                    <div class="card-icon">💧</div>
+                    <div class="card-info">
+                        <div class="water-glasses">
+                            <button *ngFor="let i of [1,2,3,4,5,6,7,8]" class="water-glass"
+                                [class.filled]="i <= waterGlasses" (click)="waterGlasses = i; saveData()">
+                                💧
+                            </button>
+                        </div>
+                        <span class="card-label">{{ waterGlasses }} / 8 čaša</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="add-meal-section">
+                <h3>🍽️ Dodaj obrok</h3>
+                <div class="meal-form">
+                    <div class="form-group">
+                        <label>Vrsta obroka</label>
+                        <select [(ngModel)]="newMeal.type">
+                            <option *ngFor="let type of mealTypes" [value]="type.value">{{ type.label }}</option>
+                        </select>
+                    </div>
+                    <div class="form-group flex-2">
+                        <label>Naziv jela</label>
+                        <input type="text" [(ngModel)]="newMeal.name" placeholder="Npr. Palačinke s nutellom">
+                    </div>
+                    <div class="form-group">
+                        <label>Kalorije</label>
+                        <input type="number" [(ngModel)]="newMeal.calories" min="0">
+                    </div>
+                    <button class="btn-add" (click)="addMeal()">+ Dodaj</button>
+                </div>
+            </div>
+
+            <div class="meals-section">
+                <div class="meal-type-section" *ngFor="let type of mealTypes">
+                    <h4>{{ type.label }}</h4>
+                    <div class="meals-list" *ngIf="getMealsByType(type.value).length > 0">
+                        <div class="meal-item" *ngFor="let meal of getMealsByType(type.value); trackBy: trackById">
+                            <span class="meal-icon">{{ getMealIcon(meal.type) }}</span>
+                            <div class="meal-info">
+                                <span class="meal-name">{{ meal.name }}</span>
+                                <span class="meal-time">{{ meal.time }}</span>
+                            </div>
+                            <span class="meal-calories">{{ meal.calories }} kcal</span>
+                            <button class="btn-remove" (click)="removeMeal(meal.id)">✕</button>
+                        </div>
+                    </div>
+                    <p class="empty-meal" *ngIf="getMealsByType(type.value).length === 0">
+                        Nema unesenih obroka
+                    </p>
+                </div>
+            </div>
+
+            <div class="calorie-goal-section">
+                <label>🎯 Dnevni cilj kalorija:</label>
+                <input type="number" [(ngModel)]="calorieGoal" min="500" step="100" (change)="saveData()">
+                <span>kcal</span>
+            </div>
+
+            <button class="btn-save" (click)="saveData()" [disabled]="isSaving">
+                {{ isSaving ? '💾 Spremanje...' : '💾 Spremi' }}
+            </button>
+        </div>
+
+        <div class="saving-indicator" *ngIf="isSaving"><span>💾 Spremanje...</span></div>
+    </div>
+</div>

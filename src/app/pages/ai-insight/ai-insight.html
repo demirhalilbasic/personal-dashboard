@@ -1,0 +1,327 @@
+<div class="ai-insight-page">
+    @if (!isReady) {
+    <div class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-animation">
+                <div class="pulse-ring"></div>
+                <span class="brain-icon">🧠</span>
+            </div>
+            <p>Učitavanje AI analize...</p>
+        </div>
+    </div>
+    } @else if (error && !insightData) {
+    <div class="error-container">
+        <span class="error-icon">⚠️</span>
+        <h2>Greška</h2>
+        <p>{{ error }}</p>
+        <button class="retry-btn" (click)="refreshInsight()">Pokušaj ponovo</button>
+        <a routerLink="/dashboard" class="back-link">← Nazad na dashboard</a>
+    </div>
+    } @else {
+    <div class="ai-insight-content">
+        <!-- Header -->
+        <div class="ai-insight-header">
+            <div class="header-title">
+                <span class="ai-icon">🤖</span>
+                <h1>AI Savjetnik</h1>
+            </div>
+            <div class="header-actions">
+                <button class="refresh-btn" (click)="refreshInsight()" [disabled]="isLoading">
+                    <span class="refresh-icon" [class.spinning]="isLoading">🔄</span>
+                    Osvježi
+                </button>
+                <a routerLink="/dashboard" class="back-btn">← Nazad</a>
+            </div>
+        </div>
+
+        <main class="page-content">
+            @if (insightData) {
+            <!-- Health Score Hero -->
+            <section class="health-score-hero">
+                <div class="score-circle" [style.borderColor]="getHealthScoreColor()">
+                    <span class="score-value">{{ insightData.healthScore }}</span>
+                    <span class="score-max">/100</span>
+                </div>
+                <div class="score-info">
+                    <h2>{{ getHealthScoreLabel() }}</h2>
+                    <p class="score-description">
+                        Bazirano na vašim trackerima iz posljednjih 7 dana
+                    </p>
+                    <div class="context-badges">
+                        @if (insightData.weatherContext) {
+                        <span class="badge weather">🌤️ {{ insightData.weatherContext }}</span>
+                        }
+                        @if (insightData.airQualityContext) {
+                        <span class="badge air-quality" [style.backgroundColor]="getAQIColor()">
+                            🌬️ {{ insightData.airQualityContext }}
+                        </span>
+                        }
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="quick-actions">
+                <div class="action-card fitness" [class.recommended]="insightData.fitnessRecommendation.shouldExercise">
+                    <div class="action-icon">
+                        {{ insightData.fitnessRecommendation.shouldExercise ? '✅' : '⚠️' }}
+                    </div>
+                    <div class="action-content">
+                        <h3>Fitness danas</h3>
+                        <p>{{ insightData.fitnessRecommendation.reason }}</p>
+                        <span class="suggestion">💡 {{ insightData.fitnessRecommendation.suggestedActivity }}</span>
+                    </div>
+                </div>
+
+                <div class="action-card mood">
+                    <div class="action-icon">
+                        {{ insightData.moodTrend.trend === 'improving' ? '📈' : insightData.moodTrend.trend ===
+                        'declining'
+                        ? '📉' : '➡️' }}
+                    </div>
+                    <div class="action-content">
+                        <h3>Trend raspoloženja</h3>
+                        <p>{{ insightData.moodTrend.insight }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Air Quality Details -->
+            @if (airQuality) {
+            <section class="air-quality-section">
+                <div class="section-header" (click)="toggleSection('airQuality')">
+                    <h2>🌬️ Kvaliteta zraka</h2>
+                    <span class="toggle-icon">{{ isSectionExpanded('airQuality') ? '▼' : '▶' }}</span>
+                </div>
+                @if (isSectionExpanded('airQuality')) {
+                <div class="air-quality-content">
+                    <div class="aqi-main" [style.borderColor]="airQuality.aqiColor">
+                        <span class="aqi-value">{{ airQuality.usAqi }}</span>
+                        <span class="aqi-label">US AQI</span>
+                        <span class="aqi-level" [style.color]="airQuality.aqiColor">{{ airQuality.aqiLevel }}</span>
+                    </div>
+                    <div class="aqi-details">
+                        <div class="aqi-item">
+                            <span class="aqi-item-label">PM2.5</span>
+                            <span class="aqi-item-value">{{ airQuality.pm25 }} μg/m³</span>
+                        </div>
+                        <div class="aqi-item">
+                            <span class="aqi-item-label">PM10</span>
+                            <span class="aqi-item-value">{{ airQuality.pm10 }} μg/m³</span>
+                        </div>
+                        <div class="aqi-item">
+                            <span class="aqi-item-label">Ozon</span>
+                            <span class="aqi-item-value">{{ airQuality.ozone }} μg/m³</span>
+                        </div>
+                        <div class="aqi-item">
+                            <span class="aqi-item-label">NO₂</span>
+                            <span class="aqi-item-value">{{ airQuality.nitrogenDioxide }} μg/m³</span>
+                        </div>
+                    </div>
+                </div>
+                }
+            </section>
+            }
+
+            <!-- AI Summary -->
+            <section class="summary-section">
+                <div class="section-header" (click)="toggleSection('summary')">
+                    <h2>📝 AI Analiza</h2>
+                    <span class="toggle-icon">{{ isSectionExpanded('summary') ? '▼' : '▶' }}</span>
+                </div>
+                @if (isSectionExpanded('summary')) {
+                <div class="summary-content">
+                    @for (line of formatSummary(); track line) {
+                    <p [innerHTML]="line"></p>
+                    }
+                </div>
+                }
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-section">
+                <div class="section-header" (click)="toggleSection('charts')">
+                    <h2>📊 Vizualizacija podataka</h2>
+                    <span class="toggle-icon">{{ isSectionExpanded('charts') ? '▼' : '▶' }}</span>
+                </div>
+                @if (isSectionExpanded('charts')) {
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>😊 Raspoloženje & Energija</h3>
+                        <canvas #moodChart width="300" height="200"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>😴 Prosječan san</h3>
+                        <canvas #sleepChart width="300" height="180"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>💪 Aktivnosti (7 dana)</h3>
+                        <canvas #activityChart width="300" height="200"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>💧 Prosječan unos vode</h3>
+                        <canvas #waterChart width="300" height="180"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>😰 Razina stresa</h3>
+                        <canvas #stressChart width="300" height="180"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>📈 Produktivnost</h3>
+                        <canvas #productivityChart width="300" height="180"></canvas>
+                    </div>
+                </div>
+                }
+            </section>
+
+            <!-- Tracker Summaries -->
+            @if (insightData.trackerSummaries.length > 0) {
+            <section class="trackers-section">
+                <div class="section-header" (click)="toggleSection('trackers')">
+                    <h2>📋 Pregled trackera</h2>
+                    <span class="toggle-icon">{{ isSectionExpanded('trackers') ? '▼' : '▶' }}</span>
+                </div>
+                @if (isSectionExpanded('trackers')) {
+                <div class="trackers-grid">
+                    @for (tracker of insightData.trackerSummaries; track tracker.trackerId) {
+                    <div class="tracker-card">
+                        <div class="tracker-icon">{{ tracker.trackerIcon }}</div>
+                        <div class="tracker-info">
+                            <h4>{{ tracker.trackerName }}</h4>
+                            <div class="tracker-stats">
+                                <span class="stat">
+                                    <strong>{{ tracker.entriesLast7Days }}</strong>/7 dana
+                                </span>
+                                <span class="stat completion">
+                                    {{ tracker.completionRate }}%
+                                </span>
+                                <span class="trend">{{ getTrendIcon(tracker.trend) }}</span>
+                            </div>
+                        </div>
+                        <div class="tracker-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" [style.width.%]="tracker.completionRate"></div>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                </div>
+                }
+            </section>
+            }
+
+            <!-- Recommendations -->
+            @if (insightData.recommendations.length > 0) {
+            <section class="recommendations-section">
+                <div class="section-header" (click)="toggleSection('recommendations')">
+                    <h2>💡 Preporuke</h2>
+                    <span class="toggle-icon">{{ isSectionExpanded('recommendations') ? '▼' : '▶' }}</span>
+                </div>
+                @if (isSectionExpanded('recommendations')) {
+                <div class="recommendations-list">
+                    @for (rec of insightData.recommendations; track rec.title) {
+                    <div class="recommendation-card" [class]="getPriorityClass(rec.priority)">
+                        <div class="rec-icon">{{ rec.icon }}</div>
+                        <div class="rec-content">
+                            <h4>{{ rec.title }}</h4>
+                            <p>{{ rec.description }}</p>
+                        </div>
+                        <div class="priority-badge">{{ rec.priority === 'high' ? 'Visok' : rec.priority === 'medium' ?
+                            'Srednji' : 'Nizak' }}</div>
+                    </div>
+                    }
+                </div>
+                }
+            </section>
+            }
+
+            <!-- Health Metrics -->
+            <section class="metrics-section">
+                <div class="section-header" (click)="toggleSection('metrics')">
+                    <h2>📈 Detaljne metrike</h2>
+                    <span class="toggle-icon">{{ isSectionExpanded('metrics') ? '▼' : '▶' }}</span>
+                </div>
+                @if (isSectionExpanded('metrics')) {
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <span class="metric-icon">😴</span>
+                        <span class="metric-label">Prosječan san</span>
+                        <span class="metric-value">{{ insightData.healthMetrics.sleepAverage > 0 ?
+                            insightData.healthMetrics.sleepAverage.toFixed(1) + ' sati' : 'N/A' }}</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-icon">⭐</span>
+                        <span class="metric-label">Kvaliteta sna</span>
+                        <span class="metric-value">{{ insightData.healthMetrics.sleepQualityAverage > 0 ?
+                            insightData.healthMetrics.sleepQualityAverage.toFixed(1) + '/5' : 'N/A' }}</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-icon">😊</span>
+                        <span class="metric-label">Raspoloženje</span>
+                        <span class="metric-value">{{ insightData.healthMetrics.moodAverage > 0 ?
+                            insightData.healthMetrics.moodAverage.toFixed(1) + '/5' : 'N/A' }}</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-icon">⚡</span>
+                        <span class="metric-label">Energija</span>
+                        <span class="metric-value">{{ insightData.healthMetrics.energyAverage > 0 ?
+                            insightData.healthMetrics.energyAverage.toFixed(1) + '/5' : 'N/A' }}</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-icon">😰</span>
+                        <span class="metric-label">Stres</span>
+                        <span class="metric-value">{{ insightData.healthMetrics.stressAverage > 0 ?
+                            insightData.healthMetrics.stressAverage.toFixed(1) + '/5' : 'N/A' }}</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-icon">💧</span>
+                        <span class="metric-label">Unos vode</span>
+                        <span class="metric-value">{{ insightData.healthMetrics.waterIntakeAverage > 0 ?
+                            insightData.healthMetrics.waterIntakeAverage.toFixed(1) + ' čaša' : 'N/A' }}</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-icon">💪</span>
+                        <span class="metric-label">Fitness sesije</span>
+                        <span class="metric-value">{{ insightData.healthMetrics.fitnessSessionsCount }}</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-icon">⏱️</span>
+                        <span class="metric-label">Fitness minuta</span>
+                        <span class="metric-value">{{ insightData.healthMetrics.fitnessMinutesTotal }} min</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-icon">📚</span>
+                        <span class="metric-label">Vrijeme učenja</span>
+                        <span class="metric-value">{{ insightData.healthMetrics.studyMinutesTotal }} min</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-icon">📱</span>
+                        <span class="metric-label">Vrijeme ekrana</span>
+                        <span class="metric-value">{{ insightData.healthMetrics.screenTimeAverage > 0 ?
+                            Math.round(insightData.healthMetrics.screenTimeAverage) + ' min' : 'N/A' }}</span>
+                    </div>
+                </div>
+                }
+            </section>
+
+            <!-- Footer -->
+            <footer class="page-footer">
+                <p class="generated-info">
+                    🕐 Generisano: {{ formatGeneratedTime() }}
+                </p>
+                <p class="disclaimer">
+                    ⚠️ Ova analiza je samo informativna i ne zamjenjuje profesionalni medicinski savjet.
+                </p>
+            </footer>
+            } @else {
+            <div class="empty-state">
+                <span class="empty-icon">📊</span>
+                <h2>Nema dostupnih podataka</h2>
+                <p>Aktivirajte trackere i počnite pratiti svoje zdravlje za personaliziranu AI analizu.</p>
+                <a routerLink="/my-trackers" class="start-btn">Aktiviraj trackere</a>
+            </div>
+            }
+        </main>
+    </div>
+    }
+</div>

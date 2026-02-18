@@ -1,0 +1,106 @@
+<div class="ai-insight-widget">
+    <div class="widget-header">
+        <div class="header-left">
+            <span class="ai-icon">🤖</span>
+            <h3>AI Savjetnik</h3>
+        </div>
+        <div class="header-actions">
+            <button class="refresh-btn" (click)="refreshInsight()" [disabled]="isLoading" title="Osvježi analizu">
+                <span class="refresh-icon" [class.spinning]="isLoading">🔄</span>
+            </button>
+            <a routerLink="/ai-insight" class="expand-btn" title="Pogledaj detaljnu analizu">
+                📊 Detalji
+            </a>
+        </div>
+    </div>
+
+    @if (isLoading && !insightData) {
+    <div class="loading-state">
+        <div class="loading-animation">
+            <div class="pulse-ring"></div>
+            <span class="brain-icon">🧠</span>
+        </div>
+        <p>AI analizira vaše podatke...</p>
+    </div>
+    } @else if (error && !insightData) {
+    <div class="error-state">
+        <span class="error-icon">⚠️</span>
+        <p>{{ error }}</p>
+        <button class="retry-btn" (click)="refreshInsight()">Pokušaj ponovo</button>
+    </div>
+    } @else if (insightData) {
+    <div class="insight-content">
+        <!-- Health Score Circle -->
+        <div class="score-section">
+            <div class="health-score-circle" [style.borderColor]="getHealthScoreColor()">
+                <span class="score-value">{{ insightData.healthScore }}</span>
+                <span class="score-label">{{ getHealthScoreLabel() }}</span>
+            </div>
+            <div class="score-details">
+                <div class="detail-item">
+                    <span class="detail-icon">🌤️</span>
+                    <span class="detail-text">{{ insightData.weatherContext || 'N/A' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-icon">🌬️</span>
+                    <span class="detail-text">{{ insightData.airQualityContext || 'N/A' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="quick-stats">
+            <div class="stat-card mood">
+                <span class="stat-icon">{{ getMoodTrendIcon() }}</span>
+                <div class="stat-info">
+                    <span class="stat-title">Raspoloženje</span>
+                    <span class="stat-value">{{ insightData.moodTrend.trend === 'improving' ? 'U porastu' :
+                        insightData.moodTrend.trend === 'declining' ? 'U padu' : 'Stabilno' }}</span>
+                </div>
+            </div>
+            <div class="stat-card fitness" [class.recommended]="insightData.fitnessRecommendation.shouldExercise">
+                <span class="stat-icon">{{ getFitnessIcon() }}</span>
+                <div class="stat-info">
+                    <span class="stat-title">Fitness danas</span>
+                    <span class="stat-value">{{ insightData.fitnessRecommendation.shouldExercise ? 'Preporučeno' :
+                        'Oprez' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Preview -->
+        <div class="summary-preview">
+            <p>{{ getSummaryPreview() }}</p>
+        </div>
+
+        <!-- Top Recommendations -->
+        @if (getTopRecommendations().length > 0) {
+        <div class="recommendations-preview">
+            <h4>💡 Preporuke za danas</h4>
+            <div class="rec-list">
+                @for (rec of getTopRecommendations(); track rec.title) {
+                <div class="rec-item" [class]="getPriorityClass(rec.priority)">
+                    <span class="rec-icon">{{ rec.icon }}</span>
+                    <span class="rec-title">{{ rec.title }}</span>
+                </div>
+                }
+            </div>
+        </div>
+        }
+
+        <!-- Footer -->
+        <div class="widget-footer">
+            <span class="generated-time">Generisano u {{ formatGeneratedTime() }}</span>
+            <a routerLink="/ai-insight" class="see-more-link">
+                Pogledaj kompletnu analizu →
+            </a>
+        </div>
+    </div>
+    } @else {
+    <div class="empty-state">
+        <span class="empty-icon">📊</span>
+        <p>Započnite praćenje zdravlja za personaliziranu AI analizu</p>
+        <a routerLink="/my-trackers" class="start-btn">Aktiviraj trackere</a>
+    </div>
+    }
+</div>

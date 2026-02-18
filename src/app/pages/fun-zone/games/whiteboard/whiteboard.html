@@ -1,0 +1,28 @@
+<div class="whiteboard-wrapper">
+    <div class="whiteboard-content">
+        <div class="page-header">
+            <div class="welcome-section">
+                <h1>{{ currentTheme?.emoji }} Whiteboard</h1>
+                <p>Kreativna ploča za crtanje i bilješke</p>
+            </div>
+            <div class="header-actions">
+                <button routerLink="/fun-zone" class="btn-settings">⬅️ Nazad</button>
+                <button (click)="logout()" class="btn-logout">🚪 Odjavi se</button>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <label for="colorPicker">🎨 Boja:</label>
+            <input type="color" id="colorPicker" [(ngModel)]="currentColor" (ngModelChange)="onColorChange()">
+
+            <label for="brushSize">✏️ Četka:</label>
+            <input type="range" id="brushSize" min="1" max="20" [(ngModel)]="brushSize">
+
+            <button (click)="toggleEraser()">{{ isErasing ? '✏️ Crtaj' : '🧹 Briši' }}</button>
+            <button (click)="clearCanvas()">🗑️ Čista ploča</button>
+            <button (click)="saveCanvas()">💾 Snimi</button>
+        </div>
+
+        <canvas #canvas id="board"></canvas>
+    </div>
+</div>

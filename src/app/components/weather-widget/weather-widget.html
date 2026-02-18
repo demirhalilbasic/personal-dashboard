@@ -1,0 +1,258 @@
+<div class="weather-widget" [class]="getAnimationClass()" [style.background]="getBackground()">
+    <!-- Weather Animation Overlay -->
+    <div class="weather-animation-overlay">
+        @if (weatherData && weatherData.current.weatherCode >= 61 && weatherData.current.weatherCode <= 67) { <!-- Rain
+            Animation -->
+            <div class="rain-container">
+                @for (drop of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]; track drop) {
+                <div class="rain-drop" [style.left.%]="drop * 5" [style.animationDelay.s]="drop * 0.1"></div>
+                }
+            </div>
+            }
+            @if (weatherData && (weatherData.current.weatherCode >= 71 && weatherData.current.weatherCode <= 77)) { <!--
+                Snow Animation -->
+                <div class="snow-container">
+                    @for (flake of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]; track flake) {
+                    <div class="snowflake" [style.left.%]="flake * 6.5" [style.animationDelay.s]="flake * 0.3">❄</div>
+                    }
+                </div>
+                }
+                @if (weatherData && weatherData.current.weatherCode >= 95) {
+                <!-- Lightning Animation -->
+                <div class="lightning-container">
+                    <div class="lightning">⚡</div>
+                </div>
+                }
+    </div>
+
+    @if (isLoading && !weatherData) {
+    <div class="loading-state">
+        <div class="weather-loader"></div>
+        <p>Učitavam vremensku prognozu...</p>
+    </div>
+    } @else if (showSettings || !settings) {
+    <!-- Settings Panel -->
+    <div class="settings-panel">
+        <div class="settings-header">
+            <h3>🌍 Odaberite Vaš Grad</h3>
+            @if (settings) {
+            <button class="close-btn" (click)="cancelSettings()">✕</button>
+            }
+        </div>
+
+        <div class="settings-content">
+            <!-- City Search -->
+            <div class="search-section">
+                <label>Pretražite grad:</label>
+                <div class="search-input-wrapper">
+                    <input type="text" [(ngModel)]="citySearchQuery" (input)="searchCities()"
+                        placeholder="Unesite naziv grada..." class="city-search-input" />
+                    @if (isSearching) {
+                    <span class="search-spinner">🔍</span>
+                    }
+                </div>
+
+                @if (citySearchResults.length > 0) {
+                <div class="search-results">
+                    @for (result of citySearchResults; track result.latitude) {
+                    <button class="search-result-item" (click)="selectCityFromSearch(result)">
+                        <span class="city-name">{{ result.city }}</span>
+                        <span class="country-name">{{ result.country }}</span>
+                    </button>
+                    }
+                </div>
+                }
+            </div>
+
+            <!-- Popular Cities -->
+            <div class="popular-cities-section">
+                <label>Ili odaberite popularni grad:</label>
+                <div class="popular-cities-grid">
+                    @for (city of popularCities.slice(0, 12); track city.city) {
+                    <button class="popular-city-btn"
+                        [class.selected]="selectedCity?.city === city.city && selectedCity?.country === city.country"
+                        (click)="selectPopularCity(city)">
+                        {{ city.city }}
+                    </button>
+                    }
+                </div>
+            </div>
+
+            @if (selectedCity) {
+            <div class="selected-city-display">
+                <span>📍 Odabrano:</span>
+                <strong>{{ selectedCity.city }}, {{ selectedCity.country }}</strong>
+            </div>
+            }
+
+            <!-- Units Selection -->
+            <div class="units-section">
+                <div class="unit-group">
+                    <label>Temperatura:</label>
+                    <div class="unit-toggle">
+                        <button [class.active]="temperatureUnit === 'celsius'"
+                            (click)="temperatureUnit = 'celsius'">°C</button>
+                        <button [class.active]="temperatureUnit === 'fahrenheit'"
+                            (click)="temperatureUnit = 'fahrenheit'">°F</button>
+                    </div>
+                </div>
+                <div class="unit-group">
+                    <label>Brzina vjetra:</label>
+                    <div class="unit-toggle">
+                        <button [class.active]="windSpeedUnit === 'kmh'" (click)="windSpeedUnit = 'kmh'">km/h</button>
+                        <button [class.active]="windSpeedUnit === 'mph'" (click)="windSpeedUnit = 'mph'">mph</button>
+                        <button [class.active]="windSpeedUnit === 'ms'" (click)="windSpeedUnit = 'ms'">m/s</button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="save-settings-btn" [disabled]="!selectedCity || isLoading" (click)="saveSettings()">
+                @if (isLoading) {
+                Spremam...
+                } @else {
+                💾 Sačuvaj Postavke
+                }
+            </button>
+        </div>
+    </div>
+    } @else if (error) {
+    <div class="error-state">
+        <span class="error-icon">⚠️</span>
+        <p>{{ error }}</p>
+        <button class="retry-btn" (click)="refreshWeather()">Pokušaj ponovo</button>
+    </div>
+    } @else if (weatherData) {
+    <!-- Main Weather Display -->
+    <div class="weather-content">
+        <!-- Header with Location and Settings -->
+        <div class="weather-header">
+            <div class="location-info">
+                <h3>📍 {{ weatherData.location.city }}</h3>
+                <span class="country">{{ weatherData.location.country }}</span>
+            </div>
+            <button class="settings-btn" (click)="openSettings()" title="Postavke">
+                ⚙️
+            </button>
+        </div>
+
+        <!-- Current Weather -->
+        <div class="current-weather">
+            <div class="main-temp-section">
+                <div class="weather-icon-large">
+                    {{ getWeatherIcon(weatherData.current.weatherCode, weatherData.current.isDay) }}
+                </div>
+                <div class="temperature-display">
+                    <span class="temp-value">{{ getTemperature(weatherData.current.temperature) }}</span>
+                    <span class="temp-unit">{{ getTemperatureUnit() }}</span>
+                </div>
+            </div>
+            <div class="weather-description">
+                {{ getWeatherDescription(weatherData.current.weatherCode) }}
+            </div>
+            <div class="feels-like">
+                Osjećaj: {{ getTemperature(weatherData.current.feelsLike) }}{{ getTemperatureUnit() }}
+            </div>
+        </div>
+
+        <!-- Weather Details Grid -->
+        <div class="weather-details-grid">
+            <div class="detail-item">
+                <span class="detail-icon">💧</span>
+                <span class="detail-value">{{ weatherData.current.humidity }}%</span>
+                <span class="detail-label">Vlažnost</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-icon">💨</span>
+                <span class="detail-value">{{ getWindSpeed(weatherData.current.windSpeed) }} {{ getWindSpeedLabel()
+                    }}</span>
+                <span class="detail-label">Vjetar {{ getWindDirection(weatherData.current.windDirection) }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-icon">☀️</span>
+                <span class="detail-value" [style.color]="getUVInfo(weatherData.current.uvIndex).color">
+                    {{ weatherData.current.uvIndex }}
+                </span>
+                <span class="detail-label">UV {{ getUVInfo(weatherData.current.uvIndex).level }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-icon">👁️</span>
+                <span class="detail-value">{{ weatherData.current.visibility | number:'1.0-1' }} km</span>
+                <span class="detail-label">Vidljivost</span>
+            </div>
+        </div>
+
+        <!-- Sunrise/Sunset -->
+        @if (weatherData.daily.length > 0) {
+        <div class="sun-times">
+            <div class="sun-item">
+                <span class="sun-icon">🌅</span>
+                <span class="sun-time">{{ formatSunTime(weatherData.daily[0].sunrise) }}</span>
+                <span class="sun-label">Izlazak</span>
+            </div>
+            <div class="sun-item">
+                <span class="sun-icon">🌇</span>
+                <span class="sun-time">{{ formatSunTime(weatherData.daily[0].sunset) }}</span>
+                <span class="sun-label">Zalazak</span>
+            </div>
+        </div>
+        }
+
+        <!-- Forecast Toggle -->
+        <div class="forecast-toggle">
+            <button [class.active]="showHourly" (click)="toggleView('hourly')">🕐 Po satu</button>
+            <button [class.active]="showDaily" (click)="toggleView('daily')">📅 7 dana</button>
+        </div>
+
+        <!-- Hourly Forecast -->
+        @if (showHourly) {
+        <div class="hourly-forecast">
+            <div class="forecast-scroll">
+                @for (hour of next6Hours; track hour.time) {
+                <div class="hourly-item">
+                    <span class="hour-time">{{ formatTime(hour.time) }}</span>
+                    <span class="hour-icon">{{ getWeatherIcon(hour.weatherCode, hour.isDay) }}</span>
+                    <span class="hour-temp">{{ getTemperature(hour.temperature) }}°</span>
+                    @if (hour.precipitation > 0) {
+                    <span class="hour-precip">💧{{ hour.precipitation | number:'1.0-1' }}mm</span>
+                    }
+                </div>
+                }
+            </div>
+        </div>
+        }
+
+        <!-- Daily Forecast -->
+        @if (showDaily) {
+        <div class="daily-forecast">
+            @for (day of next7Days; track day.date) {
+            <div class="daily-item" [class.today]="isToday(day.date)">
+                <span class="day-name">
+                    @if (isToday(day.date)) {
+                    Danas
+                    } @else {
+                    {{ getDayName(day.date, true) }}
+                    }
+                </span>
+                <span class="day-icon">{{ getWeatherIcon(day.weatherCode, true) }}</span>
+                <div class="day-temps">
+                    <span class="temp-high">{{ getTemperature(day.tempMax) }}°</span>
+                    <span class="temp-low">{{ getTemperature(day.tempMin) }}°</span>
+                </div>
+                @if (day.precipitationProbability > 0) {
+                <span class="day-precip">💧{{ day.precipitationProbability }}%</span>
+                }
+            </div>
+            }
+        </div>
+        }
+
+        <!-- Last Updated -->
+        <div class="last-updated">
+            Ažurirano: {{ weatherData.lastUpdated | date:'HH:mm' }}
+            <button class="refresh-btn" (click)="refreshWeather()" [disabled]="isLoading" title="Osvježi">
+                🔄
+            </button>
+        </div>
+    </div>
+    }
+</div>

@@ -1,0 +1,197 @@
+<article>
+    <div class="auth-container" [style.background]="getPreviewBackground()">
+        <div class="auth-card" [style.background]="getPreviewSurface()">
+            <div class="auth-header" [style.color]="getPreviewText()">
+                <h1>✨ Registracija</h1>
+                <p>Pridružite se IPI Akademiji</p>
+            </div>
+
+            @if (errorMessage) {
+            <div class="error-message">
+                {{ errorMessage }}
+            </div>
+            }
+
+            <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ime" [style.color]="getPreviewText()">Ime</label>
+                        <input type="text" id="ime" formControlName="ime" placeholder="Vaše ime"
+                            [class.invalid]="ime?.invalid && ime?.touched"
+                            [style.border-color]="ime?.invalid && ime?.touched ? '#c62828' : getPreviewPrimary()" />
+                        @if (ime?.invalid && ime?.touched) {
+                        <span class="error">
+                            @if (ime?.errors?.['required']) {
+                            Ime je obavezno
+                            }
+                            @if (ime?.errors?.['notCapitalized']) {
+                            Ime mora počinjati velikim slovom
+                            }
+                        </span>
+                        }
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prezime" [style.color]="getPreviewText()">Prezime</label>
+                        <input type="text" id="prezime" formControlName="prezime" placeholder="Vaše prezime"
+                            [class.invalid]="prezime?.invalid && prezime?.touched"
+                            [style.border-color]="prezime?.invalid && prezime?.touched ? '#c62828' : getPreviewPrimary()" />
+                        @if (prezime?.invalid && prezime?.touched) {
+                        <span class="error">
+                            @if (prezime?.errors?.['required']) {
+                            Prezime je obavezno
+                            }
+                            @if (prezime?.errors?.['notCapitalized']) {
+                            Prezime mora počinjati velikim slovom
+                            }
+                        </span>
+                        }
+                        @if (prezime?.invalid && prezime?.touched) {
+                        <span class="error">Prezime je obavezno</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email" [style.color]="getPreviewText()">Email adresa</label>
+                    <input type="email" id="email" formControlName="email" placeholder="vas.email@ipi-akademija.ba"
+                        [class.invalid]="email?.invalid && email?.touched"
+                        [style.border-color]="email?.invalid && email?.touched ? '#c62828' : getPreviewPrimary()" />
+                    @if (email?.invalid && email?.touched) {
+                    <span class="error">
+                        @if (email?.errors?.['required']) {
+                        Email je obavezan
+                        }
+                        @if (email?.errors?.['email']) {
+                        Unesite ispravan email format
+                        }
+                        @if (email?.errors?.['invalidDomain']) {
+                        Email mora biti sa @ipi-akademija.ba domene
+                        }
+                    </span>
+                    }
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="spol" [style.color]="getPreviewText()">Spol</label>
+                        <select id="spol" formControlName="spol" [class.invalid]="spol?.invalid && spol?.touched"
+                            [style.border-color]="spol?.invalid && spol?.touched ? '#c62828' : getPreviewPrimary()">
+                            <option value="">Odaberite spol</option>
+                            <option value="musko">Muško</option>
+                            <option value="zensko">Žensko</option>
+                        </select>
+                        @if (spol?.invalid && spol?.touched) {
+                        <span class="error">Spol je obavezan</span>
+                        }
+                    </div>
+
+                    <div class="form-group">
+                        <label for="datumRodjenja" [style.color]="getPreviewText()">Datum rođenja</label>
+                        <input type="date" id="datumRodjenja" formControlName="datumRodjenja"
+                            [attr.max]="getMaxBirthDate()"
+                            [class.invalid]="datumRodjenja?.invalid && datumRodjenja?.touched"
+                            [style.border-color]="datumRodjenja?.invalid && datumRodjenja?.touched ? '#c62828' : getPreviewPrimary()" />
+                        @if (datumRodjenja?.invalid && datumRodjenja?.touched) {
+                        <span class="error">
+                            @if (datumRodjenja?.errors?.['required']) {
+                            Datum rođenja je obavezan
+                            }
+                            @if (datumRodjenja?.errors?.['underAge']) {
+                            Morate imati najmanje 13 godina za registraciju
+                            }
+                        </span>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" [style.color]="getPreviewText()">Lozinka</label>
+                    <input type="password" id="password" formControlName="password" placeholder="Minimalno 8 karaktera"
+                        [class.invalid]="password?.invalid && password?.touched"
+                        [style.border-color]="password?.invalid && password?.touched ? '#c62828' : getPreviewPrimary()" />
+
+                    <!-- Password Requirements Checklist -->
+                    <div class="password-requirements">
+                        <div class="requirement" [class.met]="passwordRequirements.minLength">
+                            <span class="bullet" [class.green]="passwordRequirements.minLength">●</span>
+                            <span>Minimalno 8 karaktera</span>
+                        </div>
+                        <div class="requirement" [class.met]="passwordRequirements.hasUpperCase">
+                            <span class="bullet" [class.green]="passwordRequirements.hasUpperCase">●</span>
+                            <span>Jedno veliko slovo</span>
+                        </div>
+                        <div class="requirement" [class.met]="passwordRequirements.hasLowerCase">
+                            <span class="bullet" [class.green]="passwordRequirements.hasLowerCase">●</span>
+                            <span>Jedno malo slovo</span>
+                        </div>
+                        <div class="requirement" [class.met]="passwordRequirements.hasNumber">
+                            <span class="bullet" [class.green]="passwordRequirements.hasNumber">●</span>
+                            <span>Jedan broj</span>
+                        </div>
+                        <div class="requirement" [class.met]="passwordRequirements.hasSpecialChar">
+                            <span class="bullet" [class.green]="passwordRequirements.hasSpecialChar">●</span>
+                            <span>Jedan specijalni karakter (!@#$%^&*)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword" [style.color]="getPreviewText()">Potvrda lozinke</label>
+                    <input type="password" id="confirmPassword" formControlName="confirmPassword"
+                        placeholder="Ponovite lozinku"
+                        [class.invalid]="confirmPassword?.invalid && confirmPassword?.touched"
+                        [style.border-color]="confirmPassword?.invalid && confirmPassword?.touched ? '#c62828' : getPreviewPrimary()" />
+
+                    <div class="password-requirements">
+                        <div class="requirement" [class.met]="passwordRequirements.passwordsMatch">
+                            <span class="bullet" [class.green]="passwordRequirements.passwordsMatch">●</span>
+                            <span>Lozinke se poklapaju</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group theme-selector">
+                    <label [style.color]="getPreviewText()">Izaberite svoju temu</label>
+                    <div class="theme-grid">
+                        @for (theme of themes; track theme.id) {
+                        <div class="theme-card" [class.selected]="selectedThemeId === theme.id"
+                            (click)="selectTheme(theme.id)"
+                            [style.border-color]="selectedThemeId === theme.id ? theme.colors.primary : '#ddd'">
+                            <div class="theme-emoji">{{ theme.emoji }}</div>
+                            <div class="theme-name" [style.color]="getPreviewText()">{{ theme.name }}</div>
+                            <div class="theme-preview">
+                                <span [style.background]="theme.colors.primary"></span>
+                                <span [style.background]="theme.colors.secondary"></span>
+                                <span [style.background]="theme.colors.accent"></span>
+                            </div>
+                        </div>
+                        }
+                    </div>
+
+                    @if (selectedThemeId) {
+                    <div class="theme-description" [style.color]="getPreviewText()"
+                        [style.background]="getPreviewAccent() + '20'">
+                        <p>{{ currentThemeDescription }}</p>
+                    </div>
+                    }
+                </div>
+
+                <button type="submit" [disabled]="!isFormValid() || isLoading" class="btn-primary"
+                    [style.background]="getPreviewPrimary()">
+                    @if (isLoading) {
+                    <span>Registracija u toku...</span>
+                    } @else {
+                    <span>Registruj se</span>
+                    }
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <p [style.color]="getPreviewTextSecondary()">
+                    Već imate račun? <a routerLink="/login" [style.color]="getPreviewPrimary()">Prijavite se</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</article>
